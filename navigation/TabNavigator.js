@@ -4,7 +4,7 @@ import WalletScreen from '../screens/WalletScreen';
 import BalanceScreen from '../screens/BalanceScreen';
 import LayoutScreen from '../screens/LayoutScreen';
 import { Home, Wallet, BarChart3 } from 'lucide-react-native';
-import { useTheme } from '../context/ThemeContext';
+import { useTheme } from '../context/ThemeProvider';
 
 const Tab = createBottomTabNavigator();
 

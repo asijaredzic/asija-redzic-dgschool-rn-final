@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, FlatList } from 'react-native';
-import { useWallet } from '../context/WalletContext';
-import { useTheme } from '../context/ThemeContext';
+import { useWallet } from '../context/WalletProvider';
+import { useTheme } from '../context/ThemeProvider';
 
 import Header from '../components/Header';
 import BalanceCard from '../components/BalanceCard';

@@ -1,8 +1,8 @@
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LineChart } from 'react-native-chart-kit';
-import { useWallet } from '../context/WalletContext';
-import { useTheme } from '../context/ThemeContext';
+import { useWallet } from '../context/WalletProvider';
+import { useTheme } from '../context/ThemeProvider';
 
 const screenWidth = Dimensions.get('window').width;
 
