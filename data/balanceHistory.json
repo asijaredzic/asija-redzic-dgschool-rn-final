@@ -1,0 +1,33 @@
+{
+  "balanceHistory": [
+    {
+      "month": "Feb",
+      "balance": 7500
+    },
+    {
+      "month": "Mar",
+      "balance": 7200
+    },
+    {
+      "month": "Apr",
+      "balance": 8689
+    },
+    {
+      "month": "May",
+      "balance": 8200
+    },
+    {
+      "month": "Jun",
+      "balance": 8500
+    },
+    {
+      "month": "Jul",
+      "balance": 8300
+    }
+  ],
+  "goal": {
+    "current": 15000,
+    "target": 30000,
+    "percentage": 50
+  }
+}

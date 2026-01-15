@@ -1,0 +1,18 @@
+{
+  "cards": [
+    {
+      "id": 1,
+      "type": "Mastercard",
+      "balance": 5689,
+      "cardNumber": "****2345",
+      "color": "#A4C8E1"
+    },
+    {
+      "id": 2,
+      "type": "Visa",
+      "balance": 500.0,
+      "cardNumber": "****7162",
+      "color": "#FFB6D9"
+    }
+  ]
+}

@@ -1,14 +1,45 @@
-[
-  {
-    "id": "1",
-    "title": "Shopping",
-    "amount": -120,
-    "date": "2026-01-10"
-  },
-  {
-    "id": "2",
-    "title": "Salary",
-    "amount": 1800,
-    "date": "2026-01-05"
-  }
-]
+{
+  "transactions": [
+    {
+      "id": 1,
+      "type": "Education",
+      "amount": -346.0,
+      "date": "2026-01-13",
+      "category": "education",
+      "icon": "school"
+    },
+    {
+      "id": 2,
+      "type": "Food",
+      "amount": -90.0,
+      "date": "2026-01-13",
+      "category": "food",
+      "icon": "fast-food"
+    },
+    {
+      "id": 3,
+      "type": "Salary",
+      "amount": 2500.0,
+      "date": "2026-01-10",
+      "category": "income",
+      "icon": "wallet"
+    },
+    {
+      "id": 4,
+      "type": "Shopping",
+      "amount": -150.0,
+      "date": "2026-01-09",
+      "category": "shopping",
+      "icon": "cart"
+    },
+    {
+      "id": 5,
+      "type": "Transport",
+      "amount": -45.0,
+      "date": "2026-01-08",
+      "category": "transport",
+      "icon": "car"
+    }
+  ]
+}
+

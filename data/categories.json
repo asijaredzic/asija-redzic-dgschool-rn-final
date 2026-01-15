@@ -1,0 +1,25 @@
+{
+  "categories": [
+    {
+      "id": 1,
+      "name": "Wallet",
+      "icon": "wallet",
+      "color": "#FFB6D9",
+      "amount": 5689
+    },
+    {
+      "id": 2,
+      "name": "Investments",
+      "icon": "trending-up",
+      "color": "#B4E4FF",
+      "amount": 2340
+    },
+    {
+      "id": 3,
+      "name": "Savings",
+      "icon": "piggy-bank",
+      "color": "#C4F0C2",
+      "amount": 660
+    }
+  ]
+}
