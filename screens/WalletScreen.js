@@ -2,14 +2,11 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from
 import { SafeAreaView } from "react-native-safe-area-context"
 import { Ionicons } from "@expo/vector-icons"
 import { LineChart } from "react-native-chart-kit"
-import { useTheme } from "../context/ThemeContext"
 import balanceData from "../../data/balanceHistory.json"
 
 const screenWidth = Dimensions.get("window").width
 
 export default function WalletScreen() {
-  const { colors } = useTheme()
-
   const chartData = {
     labels: balanceData.balanceHistory.map((item) => item.month),
     datasets: [
@@ -20,15 +17,15 @@ export default function WalletScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <TouchableOpacity>
-            <Ionicons name="chevron-back" size={24} color={colors.text} />
+            <Ionicons name="chevron-back" size={24} color="#2C3E50" />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>Wallet</Text>
+          <Text style={styles.headerTitle}>Wallet</Text>
           <TouchableOpacity>
-            <Ionicons name="ellipsis-vertical" size={24} color={colors.text} />
+            <Ionicons name="ellipsis-vertical" size={24} color="#2C3E50" />
           </TouchableOpacity>
         </View>
 
@@ -81,14 +78,14 @@ export default function WalletScreen() {
           </View>
         </View>
 
-        <View style={[styles.goalCard, { backgroundColor: colors.card }]}>
+        <View style={styles.goalCard}>
           <View style={styles.goalHeader}>
             <View style={styles.goalPercentage}>
               <Text style={styles.percentageText}>{balanceData.goal.percentage}%</Text>
             </View>
             <View style={styles.goalInfo}>
-              <Text style={[styles.goalLabel, { color: colors.textSecondary }]}>Your goal</Text>
-              <Text style={[styles.goalAmount, { color: colors.text }]}>
+              <Text style={styles.goalLabel}>Your goal</Text>
+              <Text style={styles.goalAmount}>
                 ${balanceData.goal.current.toLocaleString()} of ${balanceData.goal.target.toLocaleString()}
               </Text>
             </View>
@@ -98,8 +95,8 @@ export default function WalletScreen() {
           </View>
         </View>
 
-        <View style={[styles.balanceCard, { backgroundColor: colors.card }]}>
-          <Text style={[styles.balanceTitle, { color: colors.text }]}>Balance</Text>
+        <View style={styles.balanceCard}>
+          <Text style={styles.balanceTitle}>Balance</Text>
           <View style={styles.balanceIcons}>
             <TouchableOpacity style={styles.balanceIcon}>
               <Ionicons name="home" size={24} color="#999" />
@@ -126,6 +123,7 @@ export default function WalletScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#F8F9FA",
   },
   header: {
     flexDirection: "row",
@@ -137,6 +135,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 20,
     fontFamily: "Poppins-SemiBold",
+    color: "#2C3E50",
   },
   chartSection: {
     marginHorizontal: 20,
@@ -198,6 +197,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     padding: 20,
     borderRadius: 20,
+    backgroundColor: "#fff",
   },
   goalHeader: {
     flexDirection: "row",
@@ -223,11 +223,13 @@ const styles = StyleSheet.create({
   goalLabel: {
     fontSize: 12,
     fontFamily: "Poppins-Regular",
+    color: "#999",
   },
   goalAmount: {
     fontSize: 16,
     fontFamily: "Poppins-SemiBold",
     marginTop: 2,
+    color: "#2C3E50",
   },
   balanceCard: {
     marginHorizontal: 20,
@@ -235,11 +237,13 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     padding: 20,
     borderRadius: 20,
+    backgroundColor: "#fff",
   },
   balanceTitle: {
     fontSize: 20,
     fontFamily: "Poppins-SemiBold",
     marginBottom: 15,
+    color: "#2C3E50",
   },
   balanceIcons: {
     flexDirection: "row",

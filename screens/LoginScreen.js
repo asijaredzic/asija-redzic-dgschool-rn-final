@@ -10,13 +10,11 @@ import {
   Alert,
 } from "react-native"
 import { useAuth } from "../context/AuthContext"
-import { useTheme } from "../context/ThemeContext"
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const { login } = useAuth()
-  const { colors } = useTheme()
 
   const handleLogin = () => {
     if (!email || !password) {
@@ -31,19 +29,16 @@ export default function LoginScreen() {
   }
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={[styles.container, { backgroundColor: colors.background }]}
-    >
+    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.container}>
       <View style={styles.content}>
-        <Text style={[styles.title, { color: colors.text }]}>Welcome Back!</Text>
-        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Sign in to continue</Text>
+        <Text style={styles.title}>Welcome Back!</Text>
+        <Text style={styles.subtitle}>Sign in to continue</Text>
 
         <View style={styles.inputContainer}>
           <TextInput
-            style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
+            style={styles.input}
             placeholder="Email"
-            placeholderTextColor={colors.textSecondary}
+            placeholderTextColor="#999"
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
@@ -51,20 +46,20 @@ export default function LoginScreen() {
           />
 
           <TextInput
-            style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
+            style={styles.input}
             placeholder="Password"
-            placeholderTextColor={colors.textSecondary}
+            placeholderTextColor="#999"
             value={password}
             onChangeText={setPassword}
             secureTextEntry
           />
         </View>
 
-        <TouchableOpacity style={[styles.button, { backgroundColor: colors.primary }]} onPress={handleLogin}>
+        <TouchableOpacity style={styles.button} onPress={handleLogin}>
           <Text style={styles.buttonText}>Sign In</Text>
         </TouchableOpacity>
 
-        <Text style={[styles.hint, { color: colors.textSecondary }]}>Hint: alex@example.com / password123</Text>
+        <Text style={styles.hint}>Hint: alex@example.com / password123</Text>
       </View>
     </KeyboardAvoidingView>
   )
@@ -73,6 +68,7 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#F8F9FA",
   },
   content: {
     flex: 1,
@@ -84,12 +80,14 @@ const styles = StyleSheet.create({
     fontFamily: "Poppins-Bold",
     marginBottom: 10,
     textAlign: "center",
+    color: "#2C3E50",
   },
   subtitle: {
     fontSize: 16,
     fontFamily: "Poppins-Regular",
     marginBottom: 40,
     textAlign: "center",
+    color: "#999",
   },
   inputContainer: {
     marginBottom: 20,
@@ -101,12 +99,15 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     fontSize: 16,
     fontFamily: "Poppins-Regular",
+    backgroundColor: "#fff",
+    color: "#2C3E50",
   },
   button: {
     height: 55,
     borderRadius: 15,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#FF69B4",
   },
   buttonText: {
     color: "#fff",
@@ -118,5 +119,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: "Poppins-Regular",
     textAlign: "center",
+    color: "#999",
   },
 })

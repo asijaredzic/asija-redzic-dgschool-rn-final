@@ -4,7 +4,6 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"
 import { Ionicons } from "@expo/vector-icons"
 import { useFonts } from "expo-font"
 import { ActivityIndicator, View } from "react-native"
-import { ThemeProvider, useTheme } from "./src/context/ThemeContext"
 import { AuthProvider, useAuth } from "./src/context/AuthContext"
 import HomeScreen from "./src/screens/HomeScreen"
 import WalletScreen from "./src/screens/WalletScreen"
@@ -15,8 +14,6 @@ import LoginScreen from "./src/screens/LoginScreen"
 const Tab = createBottomTabNavigator()
 
 function TabNavigator() {
-  const { theme } = useTheme()
-
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -36,9 +33,9 @@ function TabNavigator() {
           return <Ionicons name={iconName} size={24} color={color} />
         },
         tabBarActiveTintColor: "#FF69B4",
-        tabBarInactiveTintColor: theme === "dark" ? "#999" : "#666",
+        tabBarInactiveTintColor: "#666",
         tabBarStyle: {
-          backgroundColor: theme === "dark" ? "#1a1a1a" : "#fff",
+          backgroundColor: "#fff",
           borderTopWidth: 0,
           elevation: 0,
           height: 70,
@@ -88,13 +85,11 @@ export default function App() {
   }
 
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <NavigationContainer>
-          <StatusBar style="auto" />
-          <AppContent />
-        </NavigationContainer>
-      </AuthProvider>
-    </ThemeProvider>
+    <AuthProvider>
+      <NavigationContainer>
+        <StatusBar style="auto" />
+        <AppContent />
+      </NavigationContainer>
+    </AuthProvider>
   )
 }

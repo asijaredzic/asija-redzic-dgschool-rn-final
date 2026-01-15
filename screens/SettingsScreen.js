@@ -1,178 +1,124 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch } from "react-native"
-import { SafeAreaView } from "react-native-safe-area-context"
-import { Ionicons } from "@expo/vector-icons"
-import { useTheme } from "../context/ThemeContext"
+import { useState } from "react"
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+  Alert,
+} from "react-native"
 import { useAuth } from "../context/AuthContext"
 
-export default function SettingsScreen() {
-  const { colors, isDarkMode, toggleTheme } = useTheme()
-  const { user, logout } = useAuth()
+export default function LoginScreen() {
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const { login } = useAuth()
+
+  const handleLogin = () => {
+    if (!email || !password) {
+      Alert.alert("Error", "Please fill in all fields")
+      return
+    }
+
+    const result = login(email, password)
+    if (!result.success) {
+      Alert.alert("Error", result.error)
+    }
+  }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={styles.header}>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>Settings</Text>
+    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.container}>
+      <View style={styles.content}>
+        <Text style={styles.title}>Welcome Back!</Text>
+        <Text style={styles.subtitle}>Sign in to continue</Text>
+
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            placeholder="Email"
+            placeholderTextColor="#999"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+
+          <TextInput
+            style={styles.input}
+            placeholder="Password"
+            placeholderTextColor="#999"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+          />
         </View>
 
-        <View style={[styles.userCard, { backgroundColor: colors.card }]}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{user?.avatar}</Text>
-          </View>
-          <View style={styles.userInfo}>
-            <Text style={[styles.userName, { color: colors.text }]}>{user?.name}</Text>
-            <Text style={[styles.userEmail, { color: colors.textSecondary }]}>{user?.email}</Text>
-          </View>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Preferences</Text>
-
-          <TouchableOpacity style={[styles.option, { backgroundColor: colors.card }]}>
-            <View style={styles.optionLeft}>
-              <Ionicons name="notifications-outline" size={24} color={colors.text} />
-              <Text style={[styles.optionText, { color: colors.text }]}>Notifications</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
-          </TouchableOpacity>
-
-          <View style={[styles.option, { backgroundColor: colors.card }]}>
-            <View style={styles.optionLeft}>
-              <Ionicons name="moon-outline" size={24} color={colors.text} />
-              <Text style={[styles.optionText, { color: colors.text }]}>Dark Mode</Text>
-            </View>
-            <Switch
-              value={isDarkMode}
-              onValueChange={toggleTheme}
-              trackColor={{ false: "#D1D5DB", true: "#FF69B4" }}
-              thumbColor="#fff"
-            />
-          </View>
-
-          <TouchableOpacity style={[styles.option, { backgroundColor: colors.card }]}>
-            <View style={styles.optionLeft}>
-              <Ionicons name="language-outline" size={24} color={colors.text} />
-              <Text style={[styles.optionText, { color: colors.text }]}>Language</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Security</Text>
-
-          <TouchableOpacity style={[styles.option, { backgroundColor: colors.card }]}>
-            <View style={styles.optionLeft}>
-              <Ionicons name="lock-closed-outline" size={24} color={colors.text} />
-              <Text style={[styles.optionText, { color: colors.text }]}>Change Password</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
-          </TouchableOpacity>
-
-          <TouchableOpacity style={[styles.option, { backgroundColor: colors.card }]}>
-            <View style={styles.optionLeft}>
-              <Ionicons name="shield-checkmark-outline" size={24} color={colors.text} />
-              <Text style={[styles.optionText, { color: colors.text }]}>Privacy</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
-          </TouchableOpacity>
-        </View>
-
-        <TouchableOpacity style={[styles.logoutButton, { backgroundColor: "#FF4444" }]} onPress={logout}>
-          <Ionicons name="log-out-outline" size={24} color="#fff" />
-          <Text style={styles.logoutText}>Logout</Text>
+        <TouchableOpacity style={styles.button} onPress={handleLogin}>
+          <Text style={styles.buttonText}>Sign In</Text>
         </TouchableOpacity>
-      </ScrollView>
-    </SafeAreaView>
+
+        <Text style={styles.hint}>Hint: alex@example.com / password123</Text>
+      </View>
+    </KeyboardAvoidingView>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#F8F9FA",
   },
-  header: {
-    paddingHorizontal: 20,
-    paddingVertical: 15,
+  content: {
+    flex: 1,
+    justifyContent: "center",
+    paddingHorizontal: 30,
   },
-  headerTitle: {
-    fontSize: 28,
+  title: {
+    fontSize: 32,
     fontFamily: "Poppins-Bold",
-  },
-  userCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginHorizontal: 20,
-    marginTop: 10,
-    marginBottom: 30,
-    padding: 20,
-    borderRadius: 20,
-  },
-  avatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: "#FFB6D9",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  avatarText: {
-    fontSize: 30,
-  },
-  userInfo: {
-    marginLeft: 15,
-  },
-  userName: {
-    fontSize: 20,
-    fontFamily: "Poppins-SemiBold",
-  },
-  userEmail: {
-    fontSize: 14,
-    fontFamily: "Poppins-Regular",
-    marginTop: 2,
-  },
-  section: {
-    marginBottom: 25,
-  },
-  sectionTitle: {
-    fontSize: 14,
-    fontFamily: "Poppins-SemiBold",
-    marginLeft: 20,
     marginBottom: 10,
-    textTransform: "uppercase",
+    textAlign: "center",
+    color: "#2C3E50",
   },
-  option: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginHorizontal: 20,
-    marginBottom: 10,
-    padding: 18,
-    borderRadius: 15,
-  },
-  optionLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  optionText: {
+  subtitle: {
     fontSize: 16,
     fontFamily: "Poppins-Regular",
-    marginLeft: 15,
+    marginBottom: 40,
+    textAlign: "center",
+    color: "#999",
   },
-  logoutButton: {
-    flexDirection: "row",
+  inputContainer: {
+    marginBottom: 20,
+  },
+  input: {
+    height: 55,
+    borderRadius: 15,
+    paddingHorizontal: 20,
+    marginBottom: 15,
+    fontSize: 16,
+    fontFamily: "Poppins-Regular",
+    backgroundColor: "#fff",
+    color: "#2C3E50",
+  },
+  button: {
+    height: 55,
+    borderRadius: 15,
     justifyContent: "center",
     alignItems: "center",
-    marginHorizontal: 20,
-    marginTop: 20,
-    marginBottom: 30,
-    padding: 18,
-    borderRadius: 15,
+    backgroundColor: "#FF69B4",
   },
-  logoutText: {
-    fontSize: 16,
-    fontFamily: "Poppins-SemiBold",
+  buttonText: {
     color: "#fff",
-    marginLeft: 10,
+    fontSize: 18,
+    fontFamily: "Poppins-SemiBold",
+  },
+  hint: {
+    marginTop: 20,
+    fontSize: 12,
+    fontFamily: "Poppins-Regular",
+    textAlign: "center",
+    color: "#999",
   },
 })

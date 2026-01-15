@@ -1,33 +1,31 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { Ionicons } from "@expo/vector-icons"
-import { useTheme } from "../context/ThemeContext"
 import { useAuth } from "../context/AuthContext"
 import cardsData from "../../data/cards.json"
 
 export default function CardsScreen() {
-  const { colors } = useTheme()
   const { user } = useAuth()
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <TouchableOpacity>
-            <Ionicons name="close" size={24} color={colors.text} />
+            <Ionicons name="close" size={24} color="#2C3E50" />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>Wallet</Text>
+          <Text style={styles.headerTitle}>Wallet</Text>
           <TouchableOpacity>
-            <Ionicons name="ellipsis-vertical" size={24} color={colors.text} />
+            <Ionicons name="ellipsis-vertical" size={24} color="#2C3E50" />
           </TouchableOpacity>
         </View>
 
-        <View style={[styles.balanceSection, { backgroundColor: colors.card }]}>
-          <Text style={[styles.balanceLabel, { color: colors.textSecondary }]}>Balance</Text>
+        <View style={styles.balanceSection}>
+          <Text style={styles.balanceLabel}>Balance</Text>
           <View style={styles.balanceContent}>
-            <Text style={[styles.balanceAmount, { color: colors.text }]}>${user?.balance.toLocaleString()}</Text>
+            <Text style={styles.balanceAmount}>${user?.balance.toLocaleString()}</Text>
             <View style={styles.balanceInfo}>
-              <Text style={[styles.totalBalance, { color: colors.textSecondary }]}>Your total balance</Text>
+              <Text style={styles.totalBalance}>Your total balance</Text>
               <View style={styles.increaseTag}>
                 <Ionicons name="trending-up" size={16} color="#4CAF50" />
                 <Text style={styles.increaseText}>+10%</Text>
@@ -42,7 +40,7 @@ export default function CardsScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Your cards</Text>
+          <Text style={styles.sectionTitle}>Your cards</Text>
           {cardsData.cards.map((card) => (
             <View key={card.id} style={[styles.card, { backgroundColor: card.color }]}>
               <View style={styles.cardHeader}>
@@ -62,6 +60,7 @@ export default function CardsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#F8F9FA",
   },
   header: {
     flexDirection: "row",
@@ -73,6 +72,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 20,
     fontFamily: "Poppins-SemiBold",
+    color: "#2C3E50",
   },
   balanceSection: {
     marginHorizontal: 20,
@@ -80,11 +80,13 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 20,
     marginBottom: 25,
+    backgroundColor: "#fff",
   },
   balanceLabel: {
     fontSize: 14,
     fontFamily: "Poppins-Regular",
     marginBottom: 10,
+    color: "#999",
   },
   balanceContent: {
     marginBottom: 15,
@@ -93,6 +95,7 @@ const styles = StyleSheet.create({
     fontSize: 36,
     fontFamily: "Poppins-Bold",
     marginBottom: 5,
+    color: "#2C3E50",
   },
   balanceInfo: {
     flexDirection: "row",
@@ -102,6 +105,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: "Poppins-Regular",
     marginRight: 10,
+    color: "#999",
   },
   increaseTag: {
     flexDirection: "row",
@@ -132,6 +136,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontFamily: "Poppins-SemiBold",
     marginBottom: 15,
+    color: "#2C3E50",
   },
   card: {
     padding: 20,
