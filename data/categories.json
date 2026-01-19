@@ -1,25 +1,42 @@
-{
-  "categories": [
-    {
-      "id": 1,
-      "name": "Wallet",
-      "icon": "wallet",
-      "color": "#FFB6D9",
-      "amount": 5689
-    },
-    {
-      "id": 2,
-      "name": "Investments",
-      "icon": "trending-up",
-      "color": "#B4E4FF",
-      "amount": 2340
-    },
-    {
-      "id": 3,
-      "name": "Savings",
-      "icon": "piggy-bank",
-      "color": "#C4F0C2",
-      "amount": 660
-    }
-  ]
-}
+[
+  {
+    "id": 1,
+    "name": "Shopping",
+    "icon": "cart",
+    "color": "#3B82F6",
+    "spent": 450.00,
+    "budget": 600.00
+  },
+  {
+    "id": 2,
+    "name": "Food",
+    "icon": "restaurant",
+    "color": "#EF4444",
+    "spent": 280.00,
+    "budget": 400.00
+  },
+  {
+    "id": 3,
+    "name": "Entertainment",
+    "icon": "game-controller",
+    "color": "#FBBF24",
+    "spent": 120.00,
+    "budget": 200.00
+  },
+  {
+    "id": 4,
+    "name": "Transport",
+    "icon": "car",
+    "color": "#22C55E",
+    "spent": 85.00,
+    "budget": 150.00
+  },
+  {
+    "id": 5,
+    "name": "Subscriptions",
+    "icon": "refresh",
+    "color": "#A78BFA",
+    "spent": 45.99,
+    "budget": 50.00
+  }
+]

@@ -1,12 +1,16 @@
-{
-  "users": [
-    {
-      "id": 1,
-      "name": "Alex",
-      "email": "alex@example.com",
-      "password": "password123",
-      "balance": 8689,
-      "avatar": "👋"
-    }
-  ]
-}
+[
+  {
+    "id": 1,
+    "name": "Asija",
+    "email": "asija@email.com",
+    "password": "asija123",
+    "avatar": "https://i.pravatar.cc/150?img=5"
+  },
+  {
+    "id": 2,
+    "name": "Marko",
+    "email": "marko@email.com",
+    "password": "marko123",
+    "avatar": "https://i.pravatar.cc/150?img=8"
+  }
+]

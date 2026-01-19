@@ -1,247 +1,305 @@
-import { useState } from "react"
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, TextInput } from "react-native"
-import { SafeAreaView } from "react-native-safe-area-context"
-import { Ionicons } from "@expo/vector-icons"
-import { useAuth } from "../context/AuthContext"
-import categoriesData from "../../data/categories.json"
-import transactionsData from "../../data/transactions.json"
+// HomeScreen.js - Glavni ekran sa prikazom potrosnje i transakcija
 
-export default function HomeScreen() {
-  const { user, logout } = useAuth()
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState(null)
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
-  const filteredTransactions = transactionsData.transactions.filter((transaction) => {
-    const matchesSearch = transaction.type.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesCategory = !selectedCategory || transaction.category === selectedCategory
-    return matchesSearch && matchesCategory
-  })
+// Uvozimo podatke iz JSON fajlova
+import transactions from '../data/transactions.json';
 
-  const renderCategory = ({ item }) => (
-    <TouchableOpacity
-      style={[styles.categoryCard, { backgroundColor: item.color }]}
-      onPress={() => setSelectedCategory(selectedCategory === item.id ? null : item.id)}
-    >
-      <View style={styles.categoryIcon}>
-        <Ionicons name={item.icon} size={30} color="#fff" />
-      </View>
-      <Text style={styles.categoryName}>{item.name}</Text>
-      {selectedCategory === item.id && <Ionicons name="checkmark-circle" size={20} color="#4CAF50" />}
-      {!selectedCategory && <Ionicons name="chevron-forward" size={16} color="#666" />}
-    </TouchableOpacity>
-  )
-
-  const renderTransaction = ({ item }) => (
-    <View style={styles.transactionItem}>
-      <View style={[styles.transactionIcon, { backgroundColor: item.amount > 0 ? "#C4F0C2" : "#FFE5F0" }]}>
-        <Ionicons name={item.icon} size={24} color={item.amount > 0 ? "#4CAF50" : "#FF69B4"} />
-      </View>
-      <View style={styles.transactionDetails}>
-        <Text style={styles.transactionType}>{item.type}</Text>
-        <Text style={styles.transactionDate}>{item.date}</Text>
-      </View>
-      <Text style={[styles.transactionAmount, { color: item.amount > 0 ? "#4CAF50" : "#2C3E50" }]}>
-        {item.amount > 0 ? "+" : ""}${Math.abs(item.amount).toFixed(2)}
-      </Text>
-    </View>
-  )
-
+// KOMPONENTA ZA KRUG POTROSNJE
+// Ovo je jednostavan krug koji prikazuje koliko smo potrosili
+function SpendingCircle({ totalSpent }) {
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.greeting}>
-              Hi, {user?.name} {user?.avatar}
-            </Text>
-            <Text style={styles.welcomeText}>Welcome back!</Text>
+    <View style={styles.circleContainer}>
+      {/* Vanjski krug - crvena boja */}
+      <View style={styles.outerCircle}>
+        {/* Srednji krug - zuta boja */}
+        <View style={styles.middleCircle}>
+          {/* Unutrasnji krug - zelena boja */}
+          <View style={styles.innerCircle}>
+            {/* Centar sa tekstom */}
+            <View style={styles.centerCircle}>
+              <Text style={styles.spentLabel}>Spent this month</Text>
+              <Text style={styles.spentAmount}>${totalSpent}</Text>
+            </View>
           </View>
-          <TouchableOpacity onPress={logout}>
-            <Ionicons name="ellipsis-vertical" size={24} color="#2C3E50" />
-          </TouchableOpacity>
         </View>
-
-        <View style={styles.searchBar}>
-          <Ionicons name="search" size={20} color="#999" />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search transactions..."
-            placeholderTextColor="#999"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-          {searchQuery !== "" && (
-            <TouchableOpacity onPress={() => setSearchQuery("")}>
-              <Ionicons name="close-circle" size={20} color="#999" />
-            </TouchableOpacity>
-          )}
-        </View>
-
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Categories</Text>
-            {selectedCategory && (
-              <TouchableOpacity onPress={() => setSelectedCategory(null)}>
-                <Text style={styles.clearFilter}>Clear filter</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-          <FlatList
-            data={categoriesData.categories}
-            renderItem={renderCategory}
-            keyExtractor={(item) => item.id.toString()}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.categoriesList}
-          />
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            {searchQuery || selectedCategory ? "Filtered operations" : "Last operations"}
-          </Text>
-          {filteredTransactions.length > 0 ? (
-            <FlatList
-              data={filteredTransactions}
-              renderItem={renderTransaction}
-              keyExtractor={(item) => item.id.toString()}
-              scrollEnabled={false}
-            />
-          ) : (
-            <Text style={styles.noResults}>No transactions found</Text>
-          )}
-        </View>
-      </ScrollView>
-    </SafeAreaView>
-  )
+      </View>
+    </View>
+  );
 }
 
+// KOMPONENTA ZA JEDNU TRANSAKCIJU
+// Prikazuje ime, opis, iznos i vrijeme transakcije
+function TransactionItem({ item }) {
+  // Provjeravamo da li je transakcija prihod (income) ili trosak (expense)
+  const isIncome = item.type === 'income';
+
+  return (
+    <View style={styles.transactionItem}>
+      {/* Ikona transakcije */}
+      <View style={[styles.transactionIcon, { backgroundColor: item.color + '20' }]}>
+        <Ionicons name={item.icon} size={20} color={item.color} />
+      </View>
+      
+      {/* Informacije o transakciji */}
+      <View style={styles.transactionInfo}>
+        <Text style={styles.transactionName}>{item.name}</Text>
+        <Text style={styles.transactionDesc}>{item.description}</Text>
+      </View>
+      
+      {/* Iznos i vrijeme */}
+      <View style={styles.transactionRight}>
+        <Text style={[styles.transactionAmount, isIncome && styles.incomeText]}>
+          {isIncome ? '+' : '-'}${item.amount.toFixed(2)}
+        </Text>
+        <Text style={styles.transactionTime}>{item.time}</Text>
+      </View>
+    </View>
+  );
+}
+
+// GLAVNA KOMPONENTA
+export default function HomeScreen() {
+  // State za odabrani period (Day, Week, Month, Year)
+  const [selectedPeriod, setSelectedPeriod] = useState('Month');
+
+  // Lista perioda za filter
+  const periods = ['Day', 'Week', 'Month', 'Year'];
+
+  // Ukupna potrosnja (hardkodirana za primjer)
+  const totalSpent = '1,244.02';
+
+  // HEADER KOMPONENTA za FlatList
+  // Ovo se prikazuje iznad liste transakcija
+  const ListHeader = () => (
+    <View>
+      {/* Navigacija na vrhu */}
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.backButton}>
+          <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Home</Text>
+        <Text style={styles.headerDate}>Oct 2023</Text>
+      </View>
+
+      {/* Krug potrosnje */}
+      <SpendingCircle totalSpent={totalSpent} />
+
+      {/* Period filter (Day, Week, Month, Year) */}
+      <View style={styles.periodContainer}>
+        {periods.map((period) => (
+          <TouchableOpacity
+            key={period}
+            style={[
+              styles.periodButton,
+              selectedPeriod === period && styles.periodButtonActive,
+            ]}
+            onPress={() => setSelectedPeriod(period)}
+          >
+            <Text
+              style={[
+                styles.periodText,
+                selectedPeriod === period && styles.periodTextActive,
+              ]}
+            >
+              {period}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      {/* Naslov za transakcije */}
+      <View style={styles.transactionsHeader}>
+        <Text style={styles.transactionsTitle}>Transactions</Text>
+        <Text style={styles.transactionsDate}>Today</Text>
+      </View>
+    </View>
+  );
+
+  return (
+    <View style={styles.container}>
+      {/* FlatList prikazuje listu transakcija */}
+      <FlatList
+        data={transactions}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => <TransactionItem item={item} />}
+        ListHeaderComponent={ListHeader}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.listContent}
+      />
+    </View>
+  );
+}
+
+// STILOVI
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F8F9FA",
+    backgroundColor: '#0D0D12',
+  },
+  listContent: {
+    paddingBottom: 100, // Prostor za bottom tab bar
   },
   header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingTop: 10,
+    paddingTop: 60,
     paddingBottom: 20,
   },
-  greeting: {
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: '#1A1A24',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerTitle: {
     fontSize: 18,
-    fontFamily: "Poppins-Regular",
-    color: "#2C3E50",
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
-  welcomeText: {
-    fontSize: 24,
-    fontFamily: "Poppins-Bold",
-    color: "#2C3E50",
-  },
-  searchBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginHorizontal: 20,
-    padding: 15,
-    borderRadius: 15,
-    marginBottom: 20,
-    backgroundColor: "#fff",
-  },
-  searchInput: {
-    flex: 1,
-    marginLeft: 10,
-    fontSize: 16,
-    fontFamily: "Poppins-Regular",
-    color: "#2C3E50",
-  },
-  section: {
-    marginBottom: 25,
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginLeft: 20,
-    marginRight: 20,
-    marginBottom: 15,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontFamily: "Poppins-SemiBold",
-    marginLeft: 20,
-    marginBottom: 15,
-    color: "#2C3E50",
-  },
-  clearFilter: {
+  headerDate: {
     fontSize: 14,
-    fontFamily: "Poppins-Regular",
-    color: "#FF69B4",
+    color: '#6B7280',
   },
-  categoriesList: {
-    paddingHorizontal: 15,
+  // Stilovi za krug potrosnje
+  circleContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 20,
   },
-  categoryCard: {
-    width: 120,
+  outerCircle: {
+    width: 220,
+    height: 220,
+    borderRadius: 110,
+    borderWidth: 12,
+    borderColor: '#EF4444', // Crvena
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  middleCircle: {
+    width: 180,
+    height: 180,
+    borderRadius: 90,
+    borderWidth: 12,
+    borderColor: '#FBBF24', // Zuta
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  innerCircle: {
+    width: 140,
     height: 140,
+    borderRadius: 70,
+    borderWidth: 12,
+    borderColor: '#4ADE80', // Zelena
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  centerCircle: {
+    alignItems: 'center',
+  },
+  spentLabel: {
+    fontSize: 11,
+    color: '#6B7280',
+  },
+  spentAmount: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginTop: 4,
+  },
+  // Stilovi za period filter
+  periodContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginVertical: 20,
+  },
+  periodButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
     borderRadius: 20,
-    padding: 15,
-    marginHorizontal: 5,
-    justifyContent: "space-between",
+    marginHorizontal: 4,
   },
-  categoryIcon: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: "rgba(255,255,255,0.3)",
-    justifyContent: "center",
-    alignItems: "center",
+  periodButtonActive: {
+    backgroundColor: '#1A1A24',
   },
-  categoryName: {
+  periodText: {
     fontSize: 14,
-    fontFamily: "Poppins-SemiBold",
-    color: "#2C3E50",
+    color: '#6B7280',
+  },
+  periodTextActive: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+  },
+  // Stilovi za transakcije
+  transactionsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    marginTop: 10,
+    marginBottom: 16,
+  },
+  transactionsTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  transactionsDate: {
+    fontSize: 14,
+    color: '#6B7280',
   },
   transactionItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginHorizontal: 20,
-    marginBottom: 12,
-    padding: 15,
-    borderRadius: 15,
-    backgroundColor: "#fff",
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
   },
   transactionIcon: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    justifyContent: "center",
-    alignItems: "center",
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  transactionDetails: {
+  transactionInfo: {
     flex: 1,
-    marginLeft: 15,
+    marginLeft: 12,
   },
-  transactionType: {
-    fontSize: 16,
-    fontFamily: "Poppins-SemiBold",
-    color: "#2C3E50",
+  transactionName: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
-  transactionDate: {
-    fontSize: 12,
-    fontFamily: "Poppins-Regular",
+  transactionDesc: {
+    fontSize: 13,
+    color: '#6B7280',
     marginTop: 2,
-    color: "#999",
+  },
+  transactionRight: {
+    alignItems: 'flex-end',
   },
   transactionAmount: {
-    fontSize: 16,
-    fontFamily: "Poppins-SemiBold",
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
-  noResults: {
-    fontSize: 16,
-    fontFamily: "Poppins-Regular",
-    color: "#999",
-    textAlign: "center",
-    marginTop: 20,
+  incomeText: {
+    color: '#4ADE80', // Zelena za prihode
   },
-})
+  transactionTime: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginTop: 2,
+  },
+});

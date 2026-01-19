@@ -1,45 +1,79 @@
-{
-  "transactions": [
-    {
-      "id": 1,
-      "type": "Education",
-      "amount": -346.0,
-      "date": "2026-01-13",
-      "category": "education",
-      "icon": "school"
-    },
-    {
-      "id": 2,
-      "type": "Food",
-      "amount": -90.0,
-      "date": "2026-01-13",
-      "category": "food",
-      "icon": "fast-food"
-    },
-    {
-      "id": 3,
-      "type": "Salary",
-      "amount": 2500.0,
-      "date": "2026-01-10",
-      "category": "income",
-      "icon": "wallet"
-    },
-    {
-      "id": 4,
-      "type": "Shopping",
-      "amount": -150.0,
-      "date": "2026-01-09",
-      "category": "shopping",
-      "icon": "cart"
-    },
-    {
-      "id": 5,
-      "type": "Transport",
-      "amount": -45.0,
-      "date": "2026-01-08",
-      "category": "transport",
-      "icon": "car"
-    }
-  ]
-}
-
+[
+  {
+    "id": 1,
+    "name": "Ben Wayne",
+    "description": "Thanks for the dinner!",
+    "amount": 128.00,
+    "type": "income",
+    "date": "2023-10-15",
+    "time": "1:22PM",
+    "icon": "person",
+    "color": "#4ADE80"
+  },
+  {
+    "id": 2,
+    "name": "Carhartt",
+    "description": "Dubai Mall",
+    "amount": 234.00,
+    "type": "expense",
+    "date": "2023-10-15",
+    "time": "12:45PM",
+    "icon": "shopping-bag",
+    "color": "#FBBF24"
+  },
+  {
+    "id": 3,
+    "name": "Subscription",
+    "description": "Netflix",
+    "amount": 18.00,
+    "type": "expense",
+    "date": "2023-10-14",
+    "time": "12:32PM",
+    "icon": "play-circle",
+    "color": "#EF4444"
+  },
+  {
+    "id": 4,
+    "name": "Damien Light",
+    "description": "You won!",
+    "amount": 20.00,
+    "type": "income",
+    "date": "2023-10-14",
+    "time": "12:22PM",
+    "icon": "gift",
+    "color": "#A78BFA"
+  },
+  {
+    "id": 5,
+    "name": "McDonald's",
+    "description": "Food order",
+    "amount": 15.50,
+    "type": "expense",
+    "date": "2023-10-13",
+    "time": "2:15PM",
+    "icon": "fast-food",
+    "color": "#F97316"
+  },
+  {
+    "id": 6,
+    "name": "Amazon",
+    "description": "Online shopping",
+    "amount": 89.99,
+    "type": "expense",
+    "date": "2023-10-12",
+    "time": "10:30AM",
+    "icon": "cart",
+    "color": "#F59E0B"
+  },
+  {
+    "id": 7,
+    "name": "Spotify",
+    "description": "Monthly subscription",
+    "amount": 9.99,
+    "type": "expense",
+    "date": "2023-10-11",
+    "time": "8:00AM",
+    "icon": "musical-notes",
+    "color": "#22C55E"
+  }
+]
