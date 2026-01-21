@@ -1,330 +1,177 @@
-// SettingsScreen.js - Ekran za postavke aplikacije
+import React from "react"
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Alert } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
+import { Ionicons } from "@expo/vector-icons"
+import { useAuth } from "../context/AuthContext"
+import { useTheme } from "../context/ThemeContext"
 
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  Switch,
-  Alert,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-
-// Uvozimo useAuth za pristup podacima o korisniku i logout funkciji
-import { useAuth } from '../context/AuthContext';
-
-// KOMPONENTA ZA JEDNU STAVKU U POSTAVKAMA
-function SettingsItem({ icon, label, value, onPress, isSwitch, switchValue, onSwitchChange }) {
-  return (
-    <TouchableOpacity
-      style={styles.settingsItem}
-      onPress={onPress}
-      disabled={isSwitch} // Ako je switch, ne reaguje na pritisak
-    >
-      {/* Lijeva strana - ikona i tekst */}
-      <View style={styles.settingsItemLeft}>
-        <View style={styles.settingsIcon}>
-          <Ionicons name={icon} size={20} color="#4ADE80" />
-        </View>
-        <Text style={styles.settingsLabel}>{label}</Text>
-      </View>
-
-      {/* Desna strana - vrijednost, strelica ili switch */}
-      <View style={styles.settingsItemRight}>
-        {value && <Text style={styles.settingsValue}>{value}</Text>}
-        {isSwitch ? (
-          <Switch
-            value={switchValue}
-            onValueChange={onSwitchChange}
-            trackColor={{ false: '#1A1A24', true: '#4ADE80' }}
-            thumbColor="#FFFFFF"
-          />
-        ) : (
-          <Ionicons name="chevron-forward" size={20} color="#6B7280" />
-        )}
-      </View>
-    </TouchableOpacity>
-  );
-}
-
-// KOMPONENTA ZA SEKCIJU POSTAVKI
-function SettingsSection({ title, children }) {
-  return (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{title}</Text>
-      <View style={styles.sectionContent}>{children}</View>
-    </View>
-  );
-}
-
-// GLAVNA KOMPONENTA
 export default function SettingsScreen() {
-  // Uzimamo podatke o korisniku i logout funkciju iz AuthContext-a
-  const { user, logout } = useAuth();
+  const { user, logout } = useAuth()
+  const { colors, isDark, toggleTheme } = useTheme()
 
-  // State varijable za switch-eve
-  const [notifications, setNotifications] = useState(true);
-  const [darkMode, setDarkMode] = useState(true);
-  const [biometrics, setBiometrics] = useState(false);
-
-  // FUNKCIJA ZA ODJAVU
   const handleLogout = () => {
-    // Alert.alert prikazuje popup sa pitanjem
-    Alert.alert(
-      'Odjava',
-      'Da li ste sigurni da zelite da se odjavite?',
-      [
-        { text: 'Otkazi', style: 'cancel' },
-        { text: 'Odjavi se', onPress: logout, style: 'destructive' },
-      ]
-    );
-  };
+    Alert.alert("Logout", "Are you sure you want to logout?", [
+      { text: "Cancel", style: "cancel" },
+      { text: "Logout", onPress: logout, style: "destructive" },
+    ])
+  }
 
-  // Funkcija za prikaz poruke "Uskoro dostupno"
-  const showComingSoon = () => {
-    Alert.alert('Info', 'Ova funkcija ce uskoro biti dostupna!');
-  };
+  const settingsOptions = [
+    { icon: "person-outline", title: "Edit Profile", onPress: () => Alert.alert("Edit Profile", "Coming soon!") },
+    { icon: "notifications-outline", title: "Notifications", onPress: () => Alert.alert("Notifications", "Coming soon!") },
+    { icon: "lock-closed-outline", title: "Security", onPress: () => Alert.alert("Security", "Coming soon!") },
+    { icon: "help-circle-outline", title: "Help & Support", onPress: () => Alert.alert("Help", "Contact: support@app.com") },
+    { icon: "document-text-outline", title: "Terms of Service", onPress: () => Alert.alert("Terms", "Coming soon!") },
+    { icon: "shield-checkmark-outline", title: "Privacy Policy", onPress: () => Alert.alert("Privacy", "Coming soon!") },
+  ]
 
   return (
-    <View style={styles.container}>
-      {/* HEADER */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Settings</Text>
-      </View>
-
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* PROFIL KORISNIKA */}
-        <TouchableOpacity style={styles.profileBox}>
-          {/* Avatar */}
-          <View style={styles.avatarBox}>
-            <Ionicons name="person" size={32} color="#4ADE80" />
+        <View style={styles.header}>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Settings</Text>
+        </View>
+
+        <View style={[styles.userCard, { backgroundColor: colors.card }]}>
+          <View style={[styles.avatar, { backgroundColor: colors.pink }]}>
+            <Text style={styles.avatarText}>{user?.avatar}</Text>
           </View>
-          {/* Ime i email */}
-          <View style={styles.profileInfo}>
-            <Text style={styles.profileName}>{user?.name || 'Korisnik'}</Text>
-            <Text style={styles.profileEmail}>{user?.email || 'email@example.com'}</Text>
+          <View style={styles.userInfo}>
+            <Text style={[styles.userName, { color: colors.text }]}>{user?.name}</Text>
+            <Text style={[styles.userEmail, { color: colors.textSecondary }]}>{user?.email}</Text>
           </View>
-          <Ionicons name="chevron-forward" size={24} color="#6B7280" />
+          <TouchableOpacity>
+            <Ionicons name="chevron-forward" size={24} color={colors.textSecondary} />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Preferences</Text>
+          <View style={[styles.settingItem, { backgroundColor: colors.card }]}>
+            <View style={styles.settingLeft}>
+              <Ionicons name="moon-outline" size={24} color={colors.primary} />
+              <Text style={[styles.settingTitle, { color: colors.text }]}>Dark Mode</Text>
+            </View>
+            <Switch
+              value={isDark}
+              onValueChange={toggleTheme}
+              trackColor={{ false: colors.border, true: colors.primary }}
+              thumbColor="#FFF"
+            />
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Account</Text>
+          {settingsOptions.map((option, index) => (
+            <TouchableOpacity
+              key={index}
+              style={[styles.settingItem, { backgroundColor: colors.card }]}
+              onPress={option.onPress}
+            >
+              <View style={styles.settingLeft}>
+                <Ionicons name={option.icon} size={24} color={colors.primary} />
+                <Text style={[styles.settingTitle, { color: colors.text }]}>{option.title}</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        <TouchableOpacity style={[styles.logoutButton, { backgroundColor: colors.danger }]} onPress={handleLogout}>
+          <Ionicons name="log-out-outline" size={24} color="#FFF" />
+          <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
 
-        {/* ACCOUNT SEKCIJA */}
-        <SettingsSection title="Account">
-          <SettingsItem
-            icon="person-outline"
-            label="Personal Information"
-            onPress={showComingSoon}
-          />
-          <SettingsItem
-            icon="card-outline"
-            label="Payment Methods"
-            value="3 cards"
-            onPress={showComingSoon}
-          />
-          <SettingsItem
-            icon="shield-checkmark-outline"
-            label="Security"
-            onPress={showComingSoon}
-          />
-        </SettingsSection>
-
-        {/* PREFERENCES SEKCIJA */}
-        <SettingsSection title="Preferences">
-          <SettingsItem
-            icon="notifications-outline"
-            label="Notifications"
-            isSwitch
-            switchValue={notifications}
-            onSwitchChange={setNotifications}
-          />
-          <SettingsItem
-            icon="moon-outline"
-            label="Dark Mode"
-            isSwitch
-            switchValue={darkMode}
-            onSwitchChange={setDarkMode}
-          />
-          <SettingsItem
-            icon="finger-print-outline"
-            label="Biometrics"
-            isSwitch
-            switchValue={biometrics}
-            onSwitchChange={setBiometrics}
-          />
-          <SettingsItem
-            icon="language-outline"
-            label="Language"
-            value="English"
-            onPress={showComingSoon}
-          />
-          <SettingsItem
-            icon="cash-outline"
-            label="Currency"
-            value="USD ($)"
-            onPress={showComingSoon}
-          />
-        </SettingsSection>
-
-        {/* SUPPORT SEKCIJA */}
-        <SettingsSection title="Support">
-          <SettingsItem
-            icon="help-circle-outline"
-            label="Help Center"
-            onPress={showComingSoon}
-          />
-          <SettingsItem
-            icon="chatbubble-outline"
-            label="Contact Us"
-            onPress={showComingSoon}
-          />
-          <SettingsItem
-            icon="document-text-outline"
-            label="Terms & Privacy"
-            onPress={showComingSoon}
-          />
-        </SettingsSection>
-
-        {/* LOGOUT DUGME */}
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Ionicons name="log-out-outline" size={22} color="#EF4444" />
-          <Text style={styles.logoutText}>Odjavi se</Text>
-        </TouchableOpacity>
-
-        {/* VERZIJA APLIKACIJE */}
-        <Text style={styles.versionText}>Version 1.0.0</Text>
-
-        {/* Prazan prostor za bottom tab bar */}
-        <View style={{ height: 100 }} />
+        <Text style={[styles.version, { color: colors.textSecondary }]}>Version 1.0.0</Text>
       </ScrollView>
-    </View>
-  );
+    </SafeAreaView>
+  )
 }
 
-// STILOVI
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0D0D12',
+    padding: 20,
   },
   header: {
-    paddingHorizontal: 20,
-    paddingTop: 60,
-    paddingBottom: 20,
+    marginBottom: 24,
   },
   headerTitle: {
     fontSize: 28,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
+    fontWeight: "bold",
   },
-  // Profil stilovi
-  profileBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#1A1A24',
-    marginHorizontal: 20,
-    borderRadius: 20,
+  userCard: {
+    flexDirection: "row",
+    alignItems: "center",
     padding: 16,
+    borderRadius: 20,
     marginBottom: 24,
   },
-  avatarBox: {
+  avatar: {
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: '#2D2D3A',
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
-  profileInfo: {
+  avatarText: {
+    fontSize: 28,
+  },
+  userInfo: {
     flex: 1,
     marginLeft: 16,
   },
-  profileName: {
+  userName: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
+    fontWeight: "bold",
   },
-  profileEmail: {
-    fontSize: 13,
-    color: '#6B7280',
-    marginTop: 2,
+  userEmail: {
+    fontSize: 14,
+    marginTop: 4,
   },
-  // Sekcija stilovi
   section: {
     marginBottom: 24,
   },
   sectionTitle: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#6B7280',
-    marginLeft: 20,
+    fontWeight: "600",
     marginBottom: 12,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
+    textTransform: "uppercase",
   },
-  sectionContent: {
-    backgroundColor: '#1A1A24',
-    marginHorizontal: 20,
-    borderRadius: 20,
-    overflow: 'hidden',
-  },
-  // Settings item stilovi
-  settingsItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#2D2D3A',
-  },
-  settingsItemLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  settingsIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    backgroundColor: '#2D2D3A',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  settingsLabel: {
-    fontSize: 15,
-    color: '#FFFFFF',
-  },
-  settingsItemRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  settingsValue: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginRight: 8,
-  },
-  // Logout stilovi
-  logoutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-    marginHorizontal: 20,
+  settingItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: 16,
     borderRadius: 16,
-    paddingVertical: 16,
+    marginBottom: 8,
+  },
+  settingLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
+  },
+  settingTitle: {
+    fontSize: 16,
+  },
+  logoutButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 18,
+    borderRadius: 16,
+    gap: 12,
     marginTop: 8,
   },
   logoutText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#EF4444',
-    marginLeft: 8,
+    color: "#FFF",
+    fontSize: 18,
+    fontWeight: "bold",
   },
-  versionText: {
-    fontSize: 12,
-    color: '#6B7280',
-    textAlign: 'center',
+  version: {
+    textAlign: "center",
     marginTop: 24,
+    marginBottom: 40,
   },
-});
+})

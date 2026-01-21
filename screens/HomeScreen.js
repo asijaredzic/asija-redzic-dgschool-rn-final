@@ -1,305 +1,272 @@
-// HomeScreen.js - Glavni ekran sa prikazom potrosnje i transakcija
+import React, { useState } from "react"
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, FlatList, Modal, Alert } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
+import { Ionicons } from "@expo/vector-icons"
+import { useAuth } from "../context/AuthContext"
+import { useTheme } from "../context/ThemeContext"
+import categoriesData from "../data/categories.json"
+import transactionsData from "../data/transactions.json"
 
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+export default function HomeScreen({ navigation }) {
+  const { user } = useAuth()
+  const { colors } = useTheme()
+  const [searchQuery, setSearchQuery] = useState("")
+  const [selectedCategory, setSelectedCategory] = useState(null)
+  const [modalVisible, setModalVisible] = useState(false)
 
-// Uvozimo podatke iz JSON fajlova
-import transactions from '../data/transactions.json';
+  const filteredTransactions = transactionsData.transactions.filter((t) => {
+    const matchesSearch = t.type.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesCategory = !selectedCategory || t.category === selectedCategory
+    return matchesSearch && matchesCategory
+  })
 
-// KOMPONENTA ZA KRUG POTROSNJE
-// Ovo je jednostavan krug koji prikazuje koliko smo potrosili
-function SpendingCircle({ totalSpent }) {
+  const getCategoryIcon = (iconName) => {
+    const iconMap = {
+      wallet: "wallet",
+      "trending-up": "trending-up",
+      "piggy-bank": "cash",
+    }
+    return iconMap[iconName] || "ellipse"
+  }
+
+  const getTransactionIcon = (iconName) => {
+    const iconMap = {
+      school: "school",
+      "fast-food": "fast-food",
+      wallet: "wallet",
+      cart: "cart",
+      car: "car",
+    }
+    return iconMap[iconName] || "ellipse"
+  }
+
+  const openCategoryModal = (category) => {
+    setSelectedCategory(category.name.toLowerCase())
+    setModalVisible(true)
+  }
+
   return (
-    <View style={styles.circleContainer}>
-      {/* Vanjski krug - crvena boja */}
-      <View style={styles.outerCircle}>
-        {/* Srednji krug - zuta boja */}
-        <View style={styles.middleCircle}>
-          {/* Unutrasnji krug - zelena boja */}
-          <View style={styles.innerCircle}>
-            {/* Centar sa tekstom */}
-            <View style={styles.centerCircle}>
-              <Text style={styles.spentLabel}>Spent this month</Text>
-              <Text style={styles.spentAmount}>${totalSpent}</Text>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <View style={styles.header}>
+          <View style={styles.userInfo}>
+            <View style={[styles.avatar, { backgroundColor: colors.pink }]}>
+              <Text style={styles.avatarText}>{user?.avatar}</Text>
+            </View>
+            <View>
+              <Text style={[styles.greeting, { color: colors.text }]}>Hi, {user?.name}</Text>
+              <Text style={[styles.welcomeText, { color: colors.text }]}>Welcome back!</Text>
             </View>
           </View>
+          <TouchableOpacity style={[styles.menuButton, { backgroundColor: colors.card }]}>
+            <Ionicons name="ellipsis-vertical" size={20} color={colors.text} />
+          </TouchableOpacity>
         </View>
-      </View>
-    </View>
-  );
-}
 
-// KOMPONENTA ZA JEDNU TRANSAKCIJU
-// Prikazuje ime, opis, iznos i vrijeme transakcije
-function TransactionItem({ item }) {
-  // Provjeravamo da li je transakcija prihod (income) ili trosak (expense)
-  const isIncome = item.type === 'income';
+        <View style={[styles.searchContainer, { backgroundColor: colors.card }]}>
+          <Ionicons name="search" size={20} color={colors.textSecondary} />
+          <TextInput
+            style={[styles.searchInput, { color: colors.text }]}
+            placeholder="Search..."
+            placeholderTextColor={colors.textSecondary}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+        </View>
 
-  return (
-    <View style={styles.transactionItem}>
-      {/* Ikona transakcije */}
-      <View style={[styles.transactionIcon, { backgroundColor: item.color + '20' }]}>
-        <Ionicons name={item.icon} size={20} color={item.color} />
-      </View>
-      
-      {/* Informacije o transakciji */}
-      <View style={styles.transactionInfo}>
-        <Text style={styles.transactionName}>{item.name}</Text>
-        <Text style={styles.transactionDesc}>{item.description}</Text>
-      </View>
-      
-      {/* Iznos i vrijeme */}
-      <View style={styles.transactionRight}>
-        <Text style={[styles.transactionAmount, isIncome && styles.incomeText]}>
-          {isIncome ? '+' : '-'}${item.amount.toFixed(2)}
-        </Text>
-        <Text style={styles.transactionTime}>{item.time}</Text>
-      </View>
-    </View>
-  );
-}
-
-// GLAVNA KOMPONENTA
-export default function HomeScreen() {
-  // State za odabrani period (Day, Week, Month, Year)
-  const [selectedPeriod, setSelectedPeriod] = useState('Month');
-
-  // Lista perioda za filter
-  const periods = ['Day', 'Week', 'Month', 'Year'];
-
-  // Ukupna potrosnja (hardkodirana za primjer)
-  const totalSpent = '1,244.02';
-
-  // HEADER KOMPONENTA za FlatList
-  // Ovo se prikazuje iznad liste transakcija
-  const ListHeader = () => (
-    <View>
-      {/* Navigacija na vrhu */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Home</Text>
-        <Text style={styles.headerDate}>Oct 2023</Text>
-      </View>
-
-      {/* Krug potrosnje */}
-      <SpendingCircle totalSpent={totalSpent} />
-
-      {/* Period filter (Day, Week, Month, Year) */}
-      <View style={styles.periodContainer}>
-        {periods.map((period) => (
-          <TouchableOpacity
-            key={period}
-            style={[
-              styles.periodButton,
-              selectedPeriod === period && styles.periodButtonActive,
-            ]}
-            onPress={() => setSelectedPeriod(period)}
-          >
-            <Text
-              style={[
-                styles.periodText,
-                selectedPeriod === period && styles.periodTextActive,
-              ]}
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>Categories</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesContainer}>
+          {categoriesData.categories.map((category) => (
+            <TouchableOpacity
+              key={category.id}
+              style={[styles.categoryCard, { backgroundColor: category.color }]}
+              onPress={() => openCategoryModal(category)}
             >
-              {period}
+              <Ionicons name={getCategoryIcon(category.icon)} size={32} color="#333" />
+              <Text style={styles.categoryName}>{category.name}</Text>
+              <Ionicons name="chevron-forward" size={16} color="#333" />
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>Last operations</Text>
+        {filteredTransactions.slice(0, 5).map((transaction) => (
+          <TouchableOpacity
+            key={transaction.id}
+            style={[styles.transactionCard, { backgroundColor: colors.card }]}
+            onPress={() => Alert.alert("Transaction", `${transaction.type}: $${Math.abs(transaction.amount)}`)}
+          >
+            <View style={[styles.transactionIcon, { backgroundColor: transaction.amount > 0 ? colors.green : colors.pink }]}>
+              <Ionicons name={getTransactionIcon(transaction.icon)} size={24} color="#333" />
+            </View>
+            <View style={styles.transactionInfo}>
+              <Text style={[styles.transactionType, { color: colors.text }]}>{transaction.type}</Text>
+              <Text style={[styles.transactionDate, { color: colors.textSecondary }]}>{transaction.date}</Text>
+            </View>
+            <Text style={[styles.transactionAmount, { color: transaction.amount > 0 ? colors.success : colors.danger }]}>
+              {transaction.amount > 0 ? "+" : ""}${Math.abs(transaction.amount).toFixed(2)}
             </Text>
           </TouchableOpacity>
         ))}
-      </View>
 
-      {/* Naslov za transakcije */}
-      <View style={styles.transactionsHeader}>
-        <Text style={styles.transactionsTitle}>Transactions</Text>
-        <Text style={styles.transactionsDate}>Today</Text>
-      </View>
-    </View>
-  );
-
-  return (
-    <View style={styles.container}>
-      {/* FlatList prikazuje listu transakcija */}
-      <FlatList
-        data={transactions}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => <TransactionItem item={item} />}
-        ListHeaderComponent={ListHeader}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.listContent}
-      />
-    </View>
-  );
+        <Modal visible={modalVisible} animationType="slide" transparent={true}>
+          <View style={styles.modalOverlay}>
+            <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
+              <View style={styles.modalHeader}>
+                <Text style={[styles.modalTitle, { color: colors.text }]}>Category Details</Text>
+                <TouchableOpacity onPress={() => { setModalVisible(false); setSelectedCategory(null); }}>
+                  <Ionicons name="close" size={24} color={colors.text} />
+                </TouchableOpacity>
+              </View>
+              <FlatList
+                data={filteredTransactions}
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={({ item }) => (
+                  <View style={[styles.modalTransaction, { borderBottomColor: colors.border }]}>
+                    <Text style={[styles.modalTransactionType, { color: colors.text }]}>{item.type}</Text>
+                    <Text style={{ color: item.amount > 0 ? colors.success : colors.danger }}>
+                      ${Math.abs(item.amount).toFixed(2)}
+                    </Text>
+                  </View>
+                )}
+                ListEmptyComponent={<Text style={{ color: colors.textSecondary, textAlign: "center" }}>No transactions</Text>}
+              />
+            </View>
+          </View>
+        </Modal>
+      </ScrollView>
+    </SafeAreaView>
+  )
 }
 
-// STILOVI
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0D0D12',
-  },
-  listContent: {
-    paddingBottom: 100, // Prostor za bottom tab bar
+    padding: 20,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 60,
-    paddingBottom: 20,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
   },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: '#1A1A24',
-    justifyContent: 'center',
-    alignItems: 'center',
+  userInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
   },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#FFFFFF',
+  avatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: "center",
+    alignItems: "center",
   },
-  headerDate: {
-    fontSize: 14,
-    color: '#6B7280',
-  },
-  // Stilovi za krug potrosnje
-  circleContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginVertical: 20,
-  },
-  outerCircle: {
-    width: 220,
-    height: 220,
-    borderRadius: 110,
-    borderWidth: 12,
-    borderColor: '#EF4444', // Crvena
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  middleCircle: {
-    width: 180,
-    height: 180,
-    borderRadius: 90,
-    borderWidth: 12,
-    borderColor: '#FBBF24', // Zuta
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  innerCircle: {
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    borderWidth: 12,
-    borderColor: '#4ADE80', // Zelena
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  centerCircle: {
-    alignItems: 'center',
-  },
-  spentLabel: {
-    fontSize: 11,
-    color: '#6B7280',
-  },
-  spentAmount: {
+  avatarText: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginTop: 4,
   },
-  // Stilovi za period filter
-  periodContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginVertical: 20,
-  },
-  periodButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
-    marginHorizontal: 4,
-  },
-  periodButtonActive: {
-    backgroundColor: '#1A1A24',
-  },
-  periodText: {
+  greeting: {
     fontSize: 14,
-    color: '#6B7280',
   },
-  periodTextActive: {
-    color: '#FFFFFF',
-    fontWeight: '600',
+  welcomeText: {
+    fontSize: 20,
+    fontWeight: "bold",
   },
-  // Stilovi za transakcije
-  transactionsHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    marginTop: 10,
+  menuButton: {
+    padding: 10,
+    borderRadius: 12,
+  },
+  searchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 14,
+    borderRadius: 16,
+    marginBottom: 24,
+    gap: 10,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
     marginBottom: 16,
   },
-  transactionsTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
+  categoriesContainer: {
+    marginBottom: 24,
   },
-  transactionsDate: {
-    fontSize: 14,
-    color: '#6B7280',
+  categoryCard: {
+    padding: 16,
+    borderRadius: 20,
+    marginRight: 12,
+    width: 100,
+    alignItems: "center",
+    gap: 8,
   },
-  transactionItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+  categoryName: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#333",
+  },
+  transactionCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 12,
   },
   transactionIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
+    width: 50,
+    height: 50,
+    borderRadius: 16,
+    justifyContent: "center",
+    alignItems: "center",
   },
   transactionInfo: {
     flex: 1,
     marginLeft: 12,
   },
-  transactionName: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#FFFFFF',
+  transactionType: {
+    fontSize: 16,
+    fontWeight: "600",
   },
-  transactionDesc: {
-    fontSize: 13,
-    color: '#6B7280',
-    marginTop: 2,
-  },
-  transactionRight: {
-    alignItems: 'flex-end',
+  transactionDate: {
+    fontSize: 12,
+    marginTop: 4,
   },
   transactionAmount: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: "bold",
   },
-  incomeText: {
-    color: '#4ADE80', // Zelena za prihode
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "flex-end",
   },
-  transactionTime: {
-    fontSize: 12,
-    color: '#6B7280',
-    marginTop: 2,
+  modalContent: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 20,
+    maxHeight: "70%",
   },
-});
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  modalTransaction: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+  },
+  modalTransactionType: {
+    fontSize: 16,
+  },
+})

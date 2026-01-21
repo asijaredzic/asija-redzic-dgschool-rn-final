@@ -1,382 +1,285 @@
-// WalletScreen.js - Ekran sa karticama i wallet funkcijama
+import React, { useState } from "react"
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
+import { Ionicons } from "@expo/vector-icons"
+import { LineChart } from "react-native-chart-kit"
+import { useAuth } from "../context/AuthContext"
+import { useTheme } from "../context/ThemeContext"
+import balanceHistoryData from "../data/balanceHistory.json"
+import transactionsData from "../data/transactions.json"
 
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-  ScrollView,
-  Dimensions,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+const screenWidth = Dimensions.get("window").width
 
-// Uvozimo podatke iz JSON fajlova
-import cards from '../data/cards.json';
-
-// Uzimamo sirinu ekrana za racunanje velicine kartice
-const { width } = Dimensions.get('window');
-const CARD_WIDTH = width - 80;
-
-// KOMPONENTA ZA KARTICU
-// Prikazuje jednu bankovnu karticu
-function CardItem({ card }) {
-  return (
-    <View style={[styles.card, { backgroundColor: card.backgroundColor }]}>
-      {/* Gornji dio kartice - naslov i + dugme */}
-      <View style={styles.cardHeader}>
-        <Text style={styles.cardTitle}>Wallet</Text>
-        <TouchableOpacity style={styles.addButton}>
-          <Ionicons name="add" size={20} color="#FFFFFF" />
-        </TouchableOpacity>
-      </View>
-
-      {/* Balans */}
-      <Text style={styles.cardBalance}>${card.balance.toLocaleString()}</Text>
-      
-      {/* Broj racuna */}
-      <Text style={styles.cardAccount}>Account **{card.lastFourDigits}</Text>
-
-      {/* Male tackice za indikaciju drugih kartica */}
-      <View style={styles.cardDots}>
-        <View style={[styles.dot, { backgroundColor: '#4ADE80' }]} />
-        <View style={[styles.dot, { backgroundColor: '#EF4444' }]} />
-      </View>
-    </View>
-  );
-}
-
-// KOMPONENTA ZA BRZU AKCIJU
-// Prikazuje ikonu i tekst za brze akcije
-function QuickAction({ icon, label }) {
-  return (
-    <TouchableOpacity style={styles.quickAction}>
-      <View style={styles.quickActionIcon}>
-        <Ionicons name={icon} size={22} color="#FFFFFF" />
-      </View>
-      <Text style={styles.quickActionLabel}>{label}</Text>
-    </TouchableOpacity>
-  );
-}
-
-// KOMPONENTA ZA CASHBACK IKONU
-function CashbackIcon({ color, icon }) {
-  return (
-    <View style={[styles.cashbackIcon, { backgroundColor: color }]}>
-      <Ionicons name={icon} size={16} color="#FFFFFF" />
-    </View>
-  );
-}
-
-// GLAVNA KOMPONENTA
 export default function WalletScreen() {
-  // State za pracenje aktivne kartice u carousel-u
-  const [activeIndex, setActiveIndex] = useState(0);
+  const { user } = useAuth()
+  const { colors } = useTheme()
+  const [selectedMonth, setSelectedMonth] = useState("Apr")
+
+  const chartData = {
+    labels: balanceHistoryData.balanceHistory.map((item) => item.month),
+    datasets: [
+      {
+        data: balanceHistoryData.balanceHistory.map((item) => item.balance),
+        color: () => colors.primary,
+        strokeWidth: 3,
+      },
+    ],
+  }
+
+  const chartConfig = {
+    backgroundColor: colors.cardAlt,
+    backgroundGradientFrom: colors.cardAlt,
+    backgroundGradientTo: colors.cardAlt,
+    decimalPlaces: 0,
+    color: () => colors.text,
+    labelColor: () => colors.textSecondary,
+    style: {
+      borderRadius: 16,
+    },
+    propsForDots: {
+      r: "6",
+      strokeWidth: "2",
+      stroke: colors.primary,
+    },
+  }
+
+  const goal = balanceHistoryData.goal
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      
-      {/* HEADER - search bar i ikone */}
-      <View style={styles.header}>
-        {/* Profilna ikona */}
-        <TouchableOpacity style={styles.profileButton}>
-          <Ionicons name="person" size={20} color="#4ADE80" />
-        </TouchableOpacity>
-        
-        {/* Search bar */}
-        <View style={styles.searchBox}>
-          <Ionicons name="search" size={18} color="#6B7280" />
-          <Text style={styles.searchText}>Search</Text>
-        </View>
-        
-        {/* Notifikacije i profil */}
-        <View style={styles.headerIcons}>
-          <TouchableOpacity style={styles.iconButton}>
-            <Ionicons name="notifications-outline" size={22} color="#FFFFFF" />
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <View style={styles.header}>
+          <TouchableOpacity>
+            <Ionicons name="chevron-back" size={24} color={colors.text} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton}>
-            <Ionicons name="person-outline" size={22} color="#FFFFFF" />
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Wallet</Text>
+          <TouchableOpacity>
+            <Ionicons name="ellipsis-vertical" size={24} color={colors.text} />
           </TouchableOpacity>
         </View>
-      </View>
 
-      {/* CAROUSEL SA KARTICAMA */}
-      {/* FlatList sa horizontal={true} pravi horizontalni scroll */}
-      <FlatList
-        data={cards}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        pagingEnabled
-        snapToInterval={CARD_WIDTH + 16}
-        decelerationRate="fast"
-        contentContainerStyle={styles.cardsContainer}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => <CardItem card={item} />}
-        onMomentumScrollEnd={(event) => {
-          // Racunamo koji index kartice je prikazan
-          const index = Math.round(
-            event.nativeEvent.contentOffset.x / (CARD_WIDTH + 16)
-          );
-          setActiveIndex(index);
-        }}
-      />
-
-      {/* TRANSACTIONS I CASHBACK SEKCIJA */}
-      <View style={styles.infoRow}>
-        {/* Transactions box */}
-        <View style={styles.infoBox}>
-          <Text style={styles.infoTitle}>Transactions</Text>
-          <Text style={styles.infoSubtitle}>Spent in october</Text>
-          <View style={styles.transactionDots}>
-            <View style={[styles.smallDot, { backgroundColor: '#3B82F6' }]} />
-            <View style={[styles.smallDot, { backgroundColor: '#FBBF24' }]} />
-            <View style={[styles.smallDot, { backgroundColor: '#4ADE80' }]} />
-            <View style={[styles.smallDot, { backgroundColor: '#A78BFA' }]} />
+        <View style={styles.monthSelector}>
+          <Text style={[styles.monthText, { color: colors.text }]}>Month</Text>
+          <Ionicons name="chevron-down" size={16} color={colors.text} />
+          <View style={styles.monthActions}>
+            <TouchableOpacity style={[styles.iconButton, { backgroundColor: colors.card }]}>
+              <Ionicons name="pencil" size={20} color={colors.text} />
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.iconButton, { backgroundColor: colors.card }]}>
+              <Ionicons name="bar-chart" size={20} color={colors.text} />
+            </TouchableOpacity>
           </View>
         </View>
 
-        {/* Cashback box */}
-        <View style={styles.infoBox}>
-          <Text style={styles.infoTitle}>Cashback</Text>
-          <View style={styles.cashbackIcons}>
-            <CashbackIcon color="#3B82F6" icon="cart" />
-            <CashbackIcon color="#EF4444" icon="fast-food" />
-            <CashbackIcon color="#F97316" icon="logo-amazon" />
-            <CashbackIcon color="#22C55E" icon="musical-notes" />
+        <View style={[styles.chartCard, { backgroundColor: colors.cardAlt }]}>
+          <View style={styles.chartHeader}>
+            <View style={[styles.amountBadge, { backgroundColor: colors.card }]}>
+              <Text style={[styles.amountText, { color: colors.success }]}>+365.70</Text>
+            </View>
+          </View>
+          <LineChart
+            data={chartData}
+            width={screenWidth - 60}
+            height={180}
+            chartConfig={chartConfig}
+            bezier
+            style={styles.chart}
+            withInnerLines={false}
+            withOuterLines={false}
+          />
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.monthsScroll}>
+            {balanceHistoryData.balanceHistory.map((item) => (
+              <TouchableOpacity
+                key={item.month}
+                style={[styles.monthButton, selectedMonth === item.month && { backgroundColor: colors.card }]}
+                onPress={() => setSelectedMonth(item.month)}
+              >
+                <Text style={[styles.monthButtonText, { color: selectedMonth === item.month ? colors.text : colors.textSecondary }]}>
+                  {item.month}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+
+        <View style={[styles.goalCard, { backgroundColor: colors.card }]}>
+          <View style={styles.goalHeader}>
+            <View style={[styles.progressCircle, { borderColor: colors.primary }]}>
+              <Text style={[styles.progressText, { color: colors.primary }]}>{goal.percentage}%</Text>
+            </View>
+            <View style={styles.goalInfo}>
+              <Text style={[styles.goalLabel, { color: colors.textSecondary }]}>Your goal</Text>
+              <Text style={[styles.goalAmount, { color: colors.text }]}>
+                ${goal.current.toLocaleString()} of ${goal.target.toLocaleString()}
+              </Text>
+            </View>
+            <TouchableOpacity style={[styles.arrowButton, { backgroundColor: colors.primary }]}>
+              <Ionicons name="chevron-forward" size={20} color="#FFF" />
+            </TouchableOpacity>
           </View>
         </View>
-      </View>
 
-      {/* BRZE AKCIJE */}
-      <View style={styles.quickActionsRow}>
-        <QuickAction icon="add" label="Tips and training" />
-        <QuickAction icon="grid" label="All services" />
-      </View>
-
-      {/* REFER AND EARN SEKCIJA */}
-      <View style={styles.referBox}>
-        <View style={styles.referContent}>
-          <Text style={styles.referTitle}>Refer and Earn</Text>
-          <Text style={styles.referDesc}>
-            Share a referral link to your friend and get rewarded
-          </Text>
-          <TouchableOpacity style={styles.learnMoreButton}>
-            <Text style={styles.learnMoreText}>Learn more</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>Balance</Text>
+        {transactionsData.transactions.slice(0, 3).map((transaction) => (
+          <TouchableOpacity key={transaction.id} style={[styles.transactionRow, { backgroundColor: colors.card }]}>
+            <View style={[styles.transactionIcon, { backgroundColor: transaction.amount > 0 ? colors.green : colors.pink }]}>
+              <Ionicons name={transaction.icon} size={20} color="#333" />
+            </View>
+            <View style={styles.transactionDetails}>
+              <Text style={[styles.transactionType, { color: colors.text }]}>{transaction.type}</Text>
+              <Text style={[styles.transactionDate, { color: colors.textSecondary }]}>{transaction.date}</Text>
+            </View>
+            <Text style={[styles.transactionAmount, { color: transaction.amount > 0 ? colors.success : colors.danger }]}>
+              {transaction.amount > 0 ? "+" : ""}${Math.abs(transaction.amount).toFixed(2)}
+            </Text>
           </TouchableOpacity>
-        </View>
-        <View style={styles.referImage}>
-          <Ionicons name="gift" size={60} color="#6B7280" />
-        </View>
-      </View>
-
-      {/* Prazan prostor za bottom tab bar */}
-      <View style={{ height: 100 }} />
-    </ScrollView>
-  );
+        ))}
+      </ScrollView>
+    </SafeAreaView>
+  )
 }
 
-// STILOVI
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0D0D12',
+    padding: 20,
   },
-  // Header stilovi
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 60,
-    paddingBottom: 20,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
   },
-  profileButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#1A1A24',
-    justifyContent: 'center',
-    alignItems: 'center',
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
   },
-  searchBox: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#1A1A24',
-    borderRadius: 20,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    marginHorizontal: 12,
+  monthSelector: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 20,
+    gap: 8,
   },
-  searchText: {
-    marginLeft: 8,
-    color: '#6B7280',
-    fontSize: 14,
+  monthText: {
+    fontSize: 18,
+    fontWeight: "600",
   },
-  headerIcons: {
-    flexDirection: 'row',
+  monthActions: {
+    flexDirection: "row",
+    marginLeft: "auto",
+    gap: 12,
   },
   iconButton: {
-    marginLeft: 8,
+    padding: 10,
+    borderRadius: 12,
   },
-  // Kartice stilovi
-  cardsContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-  },
-  card: {
-    width: CARD_WIDTH,
-    height: 180,
+  chartCard: {
     borderRadius: 24,
     padding: 20,
-    marginRight: 16,
+    marginBottom: 20,
   },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  chartHeader: {
+    alignItems: "flex-start",
+    marginBottom: 10,
   },
-  cardTitle: {
+  amountBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+  amountText: {
     fontSize: 16,
-    color: '#FFFFFF',
-    fontWeight: '600',
+    fontWeight: "bold",
   },
-  addButton: {
-    width: 32,
-    height: 32,
+  chart: {
+    marginVertical: 10,
     borderRadius: 16,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
-  cardBalance: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginTop: 20,
-  },
-  cardAccount: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.7)',
-    marginTop: 4,
-  },
-  cardDots: {
-    flexDirection: 'row',
-    marginTop: 20,
-  },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 6,
-  },
-  // Info sekcija stilovi
-  infoRow: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    marginTop: 16,
-  },
-  infoBox: {
-    flex: 1,
-    backgroundColor: '#1A1A24',
-    borderRadius: 20,
-    padding: 16,
-    marginRight: 12,
-  },
-  infoTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#FFFFFF',
-  },
-  infoSubtitle: {
-    fontSize: 11,
-    color: '#6B7280',
-    marginTop: 2,
-  },
-  transactionDots: {
-    flexDirection: 'row',
-    marginTop: 12,
-  },
-  smallDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    marginRight: 4,
-  },
-  cashbackIcons: {
-    flexDirection: 'row',
+  monthsScroll: {
     marginTop: 10,
   },
-  cashbackIcon: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 4,
+  monthButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 12,
+    marginRight: 8,
   },
-  // Brze akcije stilovi
-  quickActionsRow: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    marginTop: 16,
+  monthButtonText: {
+    fontSize: 14,
   },
-  quickAction: {
-    flex: 1,
-    backgroundColor: '#1A1A24',
-    borderRadius: 20,
-    padding: 16,
-    marginRight: 12,
-    alignItems: 'center',
-  },
-  quickActionIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#2D2D3A',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  quickActionLabel: {
-    fontSize: 12,
-    color: '#FFFFFF',
-    textAlign: 'center',
-  },
-  // Refer and Earn stilovi
-  referBox: {
-    flexDirection: 'row',
-    backgroundColor: '#1A1A24',
+  goalCard: {
     borderRadius: 20,
     padding: 20,
-    marginHorizontal: 20,
-    marginTop: 16,
+    marginBottom: 24,
   },
-  referContent: {
+  goalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  progressCircle: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    borderWidth: 4,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  progressText: {
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+  goalInfo: {
     flex: 1,
+    marginLeft: 16,
   },
-  referTitle: {
+  goalLabel: {
+    fontSize: 14,
+  },
+  goalAmount: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-  },
-  referDesc: {
-    fontSize: 12,
-    color: '#6B7280',
+    fontWeight: "bold",
     marginTop: 4,
-    lineHeight: 18,
   },
-  learnMoreButton: {
-    marginTop: 12,
+  arrowButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
   },
-  learnMoreText: {
-    fontSize: 13,
-    color: '#4ADE80',
-    fontWeight: '600',
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 16,
   },
-  referImage: {
-    width: 80,
-    justifyContent: 'center',
-    alignItems: 'center',
+  transactionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 12,
   },
-});
+  transactionIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  transactionDetails: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  transactionType: {
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  transactionDate: {
+    fontSize: 12,
+    marginTop: 2,
+  },
+  transactionAmount: {
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+})

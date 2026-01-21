@@ -1,41 +1,33 @@
 {
-  "daily": [
-    { "label": "Mon", "value": 1100 },
-    { "label": "Tue", "value": 1050 },
-    { "label": "Wed", "value": 1200 },
-    { "label": "Thu", "value": 1150 },
-    { "label": "Fri", "value": 1244 },
-    { "label": "Sat", "value": 1180 },
-    { "label": "Sun", "value": 1244 }
+  "balanceHistory": [
+    {
+      "month": "Feb",
+      "balance": 7500
+    },
+    {
+      "month": "Mar",
+      "balance": 7200
+    },
+    {
+      "month": "Apr",
+      "balance": 8689
+    },
+    {
+      "month": "May",
+      "balance": 8200
+    },
+    {
+      "month": "Jun",
+      "balance": 8500
+    },
+    {
+      "month": "Jul",
+      "balance": 8300
+    }
   ],
-  "weekly": [
-    { "label": "W1", "value": 4500 },
-    { "label": "W2", "value": 4200 },
-    { "label": "W3", "value": 4800 },
-    { "label": "W4", "value": 5100 }
-  ],
-  "monthly": [
-    { "label": "Jan", "value": 12000 },
-    { "label": "Feb", "value": 11500 },
-    { "label": "Mar", "value": 13000 },
-    { "label": "Apr", "value": 12500 },
-    { "label": "May", "value": 14000 },
-    { "label": "Jun", "value": 13500 },
-    { "label": "Jul", "value": 15000 },
-    { "label": "Aug", "value": 14200 },
-    { "label": "Sep", "value": 13800 },
-    { "label": "Oct", "value": 12640 }
-  ],
-  "yearly": [
-    { "label": "2020", "value": 85000 },
-    { "label": "2021", "value": 95000 },
-    { "label": "2022", "value": 110000 },
-    { "label": "2023", "value": 125000 }
-  ],
-  "spendingByCategory": [
-    { "category": "Shopping", "amount": 450, "color": "#3B82F6" },
-    { "category": "Food", "amount": 280, "color": "#EF4444" },
-    { "category": "Entertainment", "amount": 120, "color": "#FBBF24" },
-    { "category": "Transport", "amount": 85, "color": "#22C55E" }
-  ]
+  "goal": {
+    "current": 15000,
+    "target": 30000,
+    "percentage": 50
+  }
 }

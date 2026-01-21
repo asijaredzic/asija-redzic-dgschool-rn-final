@@ -1,32 +1,18 @@
-[
-  {
-    "id": 1,
-    "cardNumber": "4532 •••• •••• 3498",
-    "lastFourDigits": "3498",
-    "cardHolder": "Asija Redzic",
-    "expiryDate": "09/27",
-    "balance": 12640.54,
-    "cardType": "visa",
-    "color": ["#2D2D3A", "#1A1A24"]
-  },
-  {
-    "id": 2,
-    "cardNumber": "5425 •••• •••• 9432",
-    "lastFourDigits": "9432",
-    "cardHolder": "Asija Redzic",
-    "expiryDate": "12/26",
-    "balance": 3250.00,
-    "cardType": "mastercard",
-    "color": ["#FF6B6B", "#FF8E53"]
-  },
-  {
-    "id": 3,
-    "cardNumber": "3782 •••• •••• 1234",
-    "lastFourDigits": "1234",
-    "cardHolder": "Asija Redzic",
-    "expiryDate": "03/28",
-    "balance": 890.25,
-    "cardType": "amex",
-    "color": ["#667EEA", "#764BA2"]
-  }
-]
+{
+  "cards": [
+    {
+      "id": 1,
+      "type": "Mastercard",
+      "balance": 5689,
+      "cardNumber": "****2345",
+      "color": "#A4C8E1"
+    },
+    {
+      "id": 2,
+      "type": "Visa",
+      "balance": 500.0,
+      "cardNumber": "****7162",
+      "color": "#FFB6D9"
+    }
+  ]
+}
