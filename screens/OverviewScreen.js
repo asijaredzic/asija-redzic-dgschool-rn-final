@@ -32,17 +32,13 @@ import categoriesData from '../data/categories.json';
 import balanceHistoryData from '../data/balanceHistory.json';
 
 const OverviewScreen = ({ navigation }) => {
-  
-  // State za odabrani dan u statistici
+
+  // State
   const [selectedDay, setSelectedDay] = useState(null);
-  
-  // State za odabranu kategoriju filtera
   const [selectedCategory, setSelectedCategory] = useState('all');
-  
-  // State za modal detalja transakcije
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
-  
+
   // Animacije
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -54,40 +50,39 @@ const OverviewScreen = ({ navigation }) => {
     }).start();
   }, []);
 
-  // Dohvatamo prvu karticu za prikaz
-  const card = cardsData[0];
+  // SIGURNO DOHVATANJE PODATAKA
+  const card = cardsData?.[0] || null;
 
-  // Dohvatamo statistiku iz balanceHistory
-  const weeklyStats = balanceHistoryData.weeklyStats;
+  const weeklyStats = balanceHistoryData?.weeklyStats || [];
 
-  // Pronalazimo maksimalnu vrijednost za skaliranje grafika
-  const maxAmount = Math.max(...weeklyStats.map(stat => stat.amount));
+  const maxAmount =
+    weeklyStats.length > 0
+      ? Math.max(...weeklyStats.map(stat => stat.amount))
+      : 0;
 
-  // Filtriranje transakcija na osnovu odabrane kategorije
-  const filteredTransactions = selectedCategory === 'all' 
-    ? transactionsData 
-    : transactionsData.filter(t => {
-        // Mapiramo kategoriju iz filtera na tip transakcije
-        if (selectedCategory === 'expenses') return t.amount < 0;
-        if (selectedCategory === 'income') return t.amount > 0;
-        if (selectedCategory === 'transfers') return t.category === 'transfer';
-        return true;
-      });
+  const filteredTransactions =
+    selectedCategory === 'all'
+      ? transactionsData || []
+      : (transactionsData || []).filter(t => {
+          if (selectedCategory === 'expenses') return t.amount < 0;
+          if (selectedCategory === 'income') return t.amount > 0;
+          if (selectedCategory === 'transfers') return t.category === 'transfer';
+          return true;
+        });
 
-  // Funkcija za otvaranje detalja transakcije
+  // Handleri
   const handleTransactionPress = (transaction) => {
     setSelectedTransaction(transaction);
     setDetailModalVisible(true);
   };
 
-  // Formatiranje datuma za zaglavlje
   const currentMonth = 'Jun 2025';
   const currentDate = '28 June 2025';
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#0F0F1E" />
-      
+
       <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
         {/* ZAGLAVLJE */}
         <View style={styles.header}>
@@ -112,20 +107,22 @@ const OverviewScreen = ({ navigation }) => {
           </View>
 
           {/* KARTICA */}
-          <CreditCard card={card} style={styles.cardSection} />
+          {card && <CreditCard card={card} style={styles.cardSection} />}
 
           {/* STATISTIKA */}
           <SectionHeader title="Statistics" onSeeMore={() => {}} />
-          
+
           <View style={styles.statisticsContainer}>
             {weeklyStats.map((stat, index) => (
-              <StatisticsBar 
-                key={stat.day}
-                day={stat.day}
-                amount={stat.amount}
+              <StatisticsBar
+                key={stat?.day || index}
+                day={stat?.day}
+                amount={stat?.amount || 0}
                 maxAmount={maxAmount}
                 isSelected={selectedDay === index}
-                onPress={() => setSelectedDay(selectedDay === index ? null : index)}
+                onPress={() =>
+                  setSelectedDay(selectedDay === index ? null : index)
+                }
               />
             ))}
           </View>
@@ -139,10 +136,10 @@ const OverviewScreen = ({ navigation }) => {
           </View>
 
           {/* KATEGORIJE FILTER */}
-          <CategoryFilter 
+          <CategoryFilter
             categories={[
               { id: 'all', name: 'All' },
-              ...categoriesData
+              ...(categoriesData || []).filter(c => c?.name),
             ]}
             selectedCategory={selectedCategory}
             onSelectCategory={setSelectedCategory}
@@ -150,8 +147,8 @@ const OverviewScreen = ({ navigation }) => {
 
           {/* LISTA TRANSAKCIJA */}
           <View style={styles.transactionsList}>
-            {filteredTransactions.slice(0, 8).map((transaction) => (
-              <TransactionItem 
+            {filteredTransactions.slice(0, 8).map(transaction => (
+              <TransactionItem
                 key={transaction.id}
                 transaction={transaction}
                 onPress={() => handleTransactionPress(transaction)}
@@ -159,13 +156,12 @@ const OverviewScreen = ({ navigation }) => {
             ))}
           </View>
 
-          {/* Prazan prostor na dnu za tab bar */}
           <View style={{ height: 100 }} />
         </ScrollView>
       </Animated.View>
 
-      {/* MODAL ZA DETALJE */}
-      <TransactionDetailModal 
+      {/* MODAL */}
+      <TransactionDetailModal
         visible={detailModalVisible}
         onClose={() => setDetailModalVisible(false)}
         transaction={selectedTransaction}
@@ -183,7 +179,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
   },
-  // Zaglavlje
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -212,7 +207,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  // Mjesec sekcija
   monthSection: {
     alignItems: 'center',
     marginBottom: 20,
@@ -234,11 +228,9 @@ const styles = StyleSheet.create({
     color: '#EF4444',
     marginTop: 2,
   },
-  // Kartica
   cardSection: {
     marginBottom: 20,
   },
-  // Statistika
   statisticsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -247,7 +239,6 @@ const styles = StyleSheet.create({
     padding: 15,
     marginBottom: 20,
   },
-  // Datum zaglavlje
   dateHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -264,7 +255,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#A0A0C0',
   },
-  // Lista transakcija
   transactionsList: {
     marginTop: 10,
   },
