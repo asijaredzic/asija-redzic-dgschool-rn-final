@@ -1,0 +1,27 @@
+[
+  {
+    "id": "1",
+    "name": "Emma",
+    "avatar": "https://randomuser.me/api/portraits/women/1.jpg"
+  },
+  {
+    "id": "2",
+    "name": "James",
+    "avatar": "https://randomuser.me/api/portraits/men/2.jpg"
+  },
+  {
+    "id": "3",
+    "name": "Olivia",
+    "avatar": "https://randomuser.me/api/portraits/women/3.jpg"
+  },
+  {
+    "id": "4",
+    "name": "William",
+    "avatar": "https://randomuser.me/api/portraits/men/4.jpg"
+  },
+  {
+    "id": "5",
+    "name": "Sophia",
+    "avatar": "https://randomuser.me/api/portraits/women/5.jpg"
+  }
+]

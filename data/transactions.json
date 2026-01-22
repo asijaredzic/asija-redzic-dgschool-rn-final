@@ -1,44 +1,114 @@
-{
-  "transactions": [
-    {
-      "id": 1,
-      "type": "Education",
-      "amount": -346.0,
-      "date": "2026-01-13",
-      "category": "education",
-      "icon": "school"
-    },
-    {
-      "id": 2,
-      "type": "Food",
-      "amount": -90.0,
-      "date": "2026-01-13",
-      "category": "food",
-      "icon": "fast-food"
-    },
-    {
-      "id": 3,
-      "type": "Salary",
-      "amount": 2500.0,
-      "date": "2026-01-10",
-      "category": "income",
-      "icon": "wallet"
-    },
-    {
-      "id": 4,
-      "type": "Shopping",
-      "amount": -150.0,
-      "date": "2026-01-09",
-      "category": "shopping",
-      "icon": "cart"
-    },
-    {
-      "id": 5,
-      "type": "Transport",
-      "amount": -45.0,
-      "date": "2026-01-08",
-      "category": "transport",
-      "icon": "car"
-    }
-  ]
-}
+[
+  {
+    "id": "1",
+    "title": "Dribbble Pro",
+    "date": "June 28",
+    "time": "00:01 AM",
+    "amount": -573,
+    "type": "expense",
+    "category": "Expenses",
+    "icon": "basketball",
+    "iconColor": "#EA4C89"
+  },
+  {
+    "id": "2",
+    "title": "David William",
+    "date": "June 28",
+    "time": "00:01 AM",
+    "amount": 1115,
+    "type": "income",
+    "category": "Money transfers",
+    "icon": "person",
+    "iconColor": "#4CAF50",
+    "avatar": "https://randomuser.me/api/portraits/men/45.jpg"
+  },
+  {
+    "id": "3",
+    "title": "Netflix Subscription",
+    "date": "June 27",
+    "time": "10:30 AM",
+    "amount": -15.99,
+    "type": "expense",
+    "category": "Expenses",
+    "icon": "play-circle",
+    "iconColor": "#E50914"
+  },
+  {
+    "id": "4",
+    "title": "Salary Deposit",
+    "date": "June 25",
+    "time": "09:00 AM",
+    "amount": 3500,
+    "type": "income",
+    "category": "Income",
+    "icon": "briefcase",
+    "iconColor": "#4CAF50"
+  },
+  {
+    "id": "5",
+    "title": "Grocery Store",
+    "date": "June 24",
+    "time": "02:15 PM",
+    "amount": -89.50,
+    "type": "expense",
+    "category": "Expenses",
+    "icon": "cart",
+    "iconColor": "#FF9800"
+  },
+  {
+    "id": "6",
+    "title": "Freelance Payment",
+    "date": "June 23",
+    "time": "11:00 AM",
+    "amount": 750,
+    "type": "income",
+    "category": "Income",
+    "icon": "laptop",
+    "iconColor": "#2196F3"
+  },
+  {
+    "id": "7",
+    "title": "Electric Bill",
+    "date": "June 22",
+    "time": "03:00 PM",
+    "amount": -120,
+    "type": "expense",
+    "category": "Expenses",
+    "icon": "flash",
+    "iconColor": "#FFC107"
+  },
+  {
+    "id": "8",
+    "title": "Money Transfer - Sarah",
+    "date": "June 21",
+    "time": "05:30 PM",
+    "amount": -200,
+    "type": "expense",
+    "category": "Money transfers",
+    "icon": "person",
+    "iconColor": "#9C27B0",
+    "avatar": "https://randomuser.me/api/portraits/women/65.jpg"
+  },
+  {
+    "id": "9",
+    "title": "Spotify Premium",
+    "date": "June 20",
+    "time": "12:00 PM",
+    "amount": -9.99,
+    "type": "expense",
+    "category": "Expenses",
+    "icon": "musical-notes",
+    "iconColor": "#1DB954"
+  },
+  {
+    "id": "10",
+    "title": "Bubble Pro",
+    "date": "June 19",
+    "time": "08:45 AM",
+    "amount": -29,
+    "type": "expense",
+    "category": "Expenses",
+    "icon": "globe",
+    "iconColor": "#0066FF"
+  }
+]

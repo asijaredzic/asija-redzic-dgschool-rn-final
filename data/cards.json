@@ -1,18 +1,20 @@
-{
-  "cards": [
-    {
-      "id": 1,
-      "type": "Mastercard",
-      "balance": 5689,
-      "cardNumber": "****2345",
-      "color": "#A4C8E1"
-    },
-    {
-      "id": 2,
-      "type": "Visa",
-      "balance": 500.0,
-      "cardNumber": "****7162",
-      "color": "#FFB6D9"
-    }
-  ]
-}
+[
+  {
+    "id": "1",
+    "cardNumber": "9565",
+    "balance": 5654.23,
+    "cardHolder": "Siyam Ali",
+    "expiryDate": "12/28",
+    "cardType": "visa",
+    "color": "#1A1A2E"
+  },
+  {
+    "id": "2",
+    "cardNumber": "4521",
+    "balance": 2340.50,
+    "cardHolder": "Siyam Ali",
+    "expiryDate": "08/27",
+    "cardType": "mastercard",
+    "color": "#16213E"
+  }
+]

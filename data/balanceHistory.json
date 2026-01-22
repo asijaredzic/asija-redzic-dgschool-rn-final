@@ -1,33 +1,59 @@
 {
-  "balanceHistory": [
+  "currentMonth": "Jun 2025",
+  "totalBalance": 1924.30,
+  "balanceChange": -433.35,
+  "weeklyData": [
     {
-      "month": "Feb",
-      "balance": 7500
+      "day": "SUN",
+      "date": "18",
+      "amount": 800,
+      "isHighlighted": false
     },
     {
-      "month": "Mar",
-      "balance": 7200
+      "day": "MON",
+      "date": "19",
+      "amount": 600,
+      "isHighlighted": false
     },
     {
-      "month": "Apr",
-      "balance": 8689
+      "day": "TUE",
+      "date": "20",
+      "amount": 1150,
+      "isHighlighted": true,
+      "label": "$1,150.00"
     },
     {
-      "month": "May",
-      "balance": 8200
+      "day": "WED",
+      "date": "19",
+      "amount": 500,
+      "isHighlighted": false
     },
     {
-      "month": "Jun",
-      "balance": 8500
+      "day": "THU",
+      "date": "20",
+      "amount": 700,
+      "isHighlighted": false
     },
     {
-      "month": "Jul",
-      "balance": 8300
+      "day": "FRI",
+      "date": "21",
+      "amount": 900,
+      "isHighlighted": false
+    },
+    {
+      "day": "SAT",
+      "date": "22",
+      "amount": 450,
+      "isHighlighted": false
     }
   ],
-  "goal": {
-    "current": 15000,
-    "target": 30000,
-    "percentage": 50
-  }
+  "monthlyHistory": [
+    { "month": "Jan", "balance": 15000 },
+    { "month": "Feb", "balance": 16200 },
+    { "month": "Mar", "balance": 15800 },
+    { "month": "Apr", "balance": 17100 },
+    { "month": "May", "balance": 16500 },
+    { "month": "Jun", "balance": 17298.92 }
+  ],
+  "currentDate": "28 June 2025"
 }

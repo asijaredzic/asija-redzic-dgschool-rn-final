@@ -1,25 +1,20 @@
-{
-  "categories": [
-    {
-      "id": 1,
-      "name": "Wallet",
-      "icon": "wallet",
-      "color": "#FFB6D9",
-      "amount": 5689
-    },
-    {
-      "id": 2,
-      "name": "Investments",
-      "icon": "trending-up",
-      "color": "#B4E4FF",
-      "amount": 2340
-    },
-    {
-      "id": 3,
-      "name": "Savings",
-      "icon": "piggy-bank",
-      "color": "#C4F0C2",
-      "amount": 660
-    }
-  ]
-}
+[
+  {
+    "id": "1",
+    "name": "Expenses",
+    "color": "#8B5CF6",
+    "isSelected": true
+  },
+  {
+    "id": "2",
+    "name": "Income",
+    "color": "#10B981",
+    "isSelected": false
+  },
+  {
+    "id": "3",
+    "name": "Money transfers",
+    "color": "#3B82F6",
+    "isSelected": false
+  }
+]

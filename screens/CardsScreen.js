@@ -1,355 +1,467 @@
-import React, { useState } from "react"
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, TextInput, Alert } from "react-native"
-import { SafeAreaView } from "react-native-safe-area-context"
-import { Ionicons } from "@expo/vector-icons"
-import { useAuth } from "../context/AuthContext"
-import { useTheme } from "../context/ThemeContext"
-import cardsData from "../data/cards.json"
+// CardsScreen.js - Ekran za pregled kartica
+// Prikazuje carousel sa karticama i quick actions
+// Ima animacije za lijepi prikaz
 
-export default function CardsScreen() {
-  const { user } = useAuth()
-  const { colors } = useTheme()
-  const [cards, setCards] = useState(cardsData.cards)
-  const [modalVisible, setModalVisible] = useState(false)
-  const [selectedCard, setSelectedCard] = useState(null)
-  const [transferAmount, setTransferAmount] = useState("")
+import React, { useState, useRef, useEffect } from 'react';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  ScrollView, 
+  TouchableOpacity,
+  Dimensions,
+  FlatList,
+  StatusBar,
+  Animated,
+  Alert
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
-  const openCardDetails = (card) => {
-    setSelectedCard(card)
-    setModalVisible(true)
-  }
+// Uvoz podataka
+import cardsData from '../data/cards.json';
+import transactionsData from '../data/transactions.json';
 
-  const handleTransfer = () => {
-    if (!transferAmount || isNaN(Number(transferAmount))) {
-      Alert.alert("Error", "Please enter a valid amount")
-      return
-    }
-    Alert.alert("Success", `Transfer of $${transferAmount} initiated from ${selectedCard.type}`)
-    setTransferAmount("")
-    setModalVisible(false)
-  }
+// Uvoz komponenti
+import { TransactionItem, SectionHeader, TransactionDetailModal } from '../components';
+
+// Dimenzije ekrana za carousel
+const { width } = Dimensions.get('window');
+const CARD_WIDTH = width - 60;
+
+const CardsScreen = () => {
+  
+  // State za trenutni indeks kartice u carousel-u
+  const [activeCardIndex, setActiveCardIndex] = useState(0);
+  
+  // State za modal
+  const [detailModalVisible, setDetailModalVisible] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
+  
+  // Animacije
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(20)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
+  // Formatiranje broja kartice
+  const formatCardNumber = (number) => {
+    return number.replace(/(.{4})/g, '$1 ').trim();
+  };
+
+  // Formatiranje balansa
+  const formatBalance = (balance) => {
+    return '$' + balance.toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  };
+
+  // Funkcija koja se poziva kada korisnik skroluje carousel
+  const handleScroll = (event) => {
+    const scrollPosition = event.nativeEvent.contentOffset.x;
+    const index = Math.round(scrollPosition / CARD_WIDTH);
+    setActiveCardIndex(index);
+  };
+
+  // Quick actions funkcije
+  const handleBlockCard = () => {
+    Alert.alert(
+      'Blokiranje kartice',
+      'Da li ste sigurni da zelite blokirati ovu karticu?',
+      [
+        { text: 'Odustani', style: 'cancel' },
+        { text: 'Blokiraj', style: 'destructive', onPress: () => {
+          Alert.alert('Uspjesno', 'Kartica je blokirana');
+        }}
+      ]
+    );
+  };
+
+  const handleCardSettings = () => {
+    Alert.alert('Postavke kartice', 'Ovdje bi bile postavke kartice');
+  };
+
+  const handleAddCard = () => {
+    Alert.alert('Nova kartica', 'Ovdje bi se dodala nova kartica');
+  };
+
+  // Renderovanje jedne kartice u carousel-u
+  const renderCard = ({ item, index }) => {
+    // Odredjujemo boje gradijenta na osnovu tipa kartice
+    const gradientColors = item.type === 'visa' 
+      ? ['#1E3A5F', '#0D1B2A'] 
+      : ['#2D2D5A', '#1E1E3A'];
+
+    return (
+      <Animated.View 
+        style={[
+          styles.cardContainer,
+          { 
+            opacity: fadeAnim,
+            transform: [{ translateY: slideAnim }]
+          }
+        ]}
+      >
+        <LinearGradient
+          colors={gradientColors}
+          style={styles.card}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        >
+          {/* Gornji red - logo i chip */}
+          <View style={styles.cardTopRow}>
+            <View style={styles.cardChip}>
+              <View style={styles.chipLine} />
+              <View style={styles.chipLine} />
+              <View style={styles.chipLine} />
+            </View>
+            <View style={styles.cardTypeContainer}>
+              <Text style={styles.cardType}>{item.type.toUpperCase()}</Text>
+              <Ionicons 
+                name="wifi" 
+                size={18} 
+                color="#A0A0C0" 
+                style={styles.wifiIcon}
+              />
+            </View>
+          </View>
+
+          {/* Broj kartice */}
+          <Text style={styles.cardNumber}>{formatCardNumber(item.number)}</Text>
+
+          {/* Donji red - ime i datum */}
+          <View style={styles.cardBottomRow}>
+            <View>
+              <Text style={styles.cardLabel}>Card Holder</Text>
+              <Text style={styles.cardHolderName}>{item.holder}</Text>
+            </View>
+            <View style={styles.cardExpiry}>
+              <Text style={styles.cardLabel}>Expires</Text>
+              <Text style={styles.cardExpiryDate}>{item.expiry}</Text>
+            </View>
+          </View>
+
+          {/* Balans */}
+          <View style={styles.cardBalanceContainer}>
+            <Text style={styles.cardBalanceLabel}>Balance</Text>
+            <Text style={styles.cardBalance}>{formatBalance(item.balance)}</Text>
+          </View>
+        </LinearGradient>
+      </Animated.View>
+    );
+  };
+
+  // Dohvatamo transakcije za trenutnu karticu
+  const cardTransactions = transactionsData.slice(0, 4);
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#0F0F1E" />
+      
       <ScrollView showsVerticalScrollIndicator={false}>
+        {/* ZAGLAVLJE */}
         <View style={styles.header}>
-          <TouchableOpacity>
-            <Ionicons name="close" size={24} color={colors.text} />
-          </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>Wallet</Text>
-          <TouchableOpacity>
-            <Ionicons name="ellipsis-vertical" size={24} color={colors.text} />
+          <Text style={styles.headerTitle}>My Cards</Text>
+          <TouchableOpacity onPress={handleAddCard} style={styles.addButton}>
+            <Ionicons name="add" size={24} color="#8B5CF6" />
           </TouchableOpacity>
         </View>
 
-        <View style={[styles.balanceCard, { backgroundColor: colors.yellow }]}>
-          <Text style={styles.balanceLabel}>Balance</Text>
-          <View style={styles.balanceRow}>
-            <Text style={styles.balanceAmount}>${user?.balance?.toLocaleString() || "8,689"}</Text>
-            <View style={styles.percentageBadge}>
-              <Text style={styles.percentageText}>+15%</Text>
-            </View>
-          </View>
-          <View style={styles.moneyIcons}>
-            <Text style={styles.moneyIcon}>💵</Text>
-            <Text style={styles.moneyIcon}>💵</Text>
-          </View>
-        </View>
+        {/* CAROUSEL SA KARTICAMA */}
+        <FlatList
+          data={cardsData}
+          renderItem={renderCard}
+          keyExtractor={(item) => item.id.toString()}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          snapToInterval={CARD_WIDTH + 20}
+          decelerationRate="fast"
+          contentContainerStyle={styles.carouselContainer}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
+        />
 
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>Your cards</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.cardsScroll}>
-          {cards.map((card) => (
-            <TouchableOpacity
-              key={card.id}
-              style={[styles.cardItem, { backgroundColor: card.color }]}
-              onPress={() => openCardDetails(card)}
-            >
-              <View style={styles.cardHeader}>
-                <Text style={styles.cardType}>{card.type}</Text>
-                {card.type === "Mastercard" && <View style={styles.mastercardLogo}><View style={styles.mcCircle1} /><View style={styles.mcCircle2} /></View>}
-                {card.type === "Visa" && <Text style={styles.visaLogo}>VISA</Text>}
-              </View>
-              <Text style={styles.cardBalanceLabel}>Balance</Text>
-              <Text style={styles.cardBalance}>${card.balance.toLocaleString()}</Text>
-              <Text style={styles.cardNumber}>{card.cardNumber}</Text>
-            </TouchableOpacity>
+        {/* INDIKATORI */}
+        <View style={styles.indicators}>
+          {cardsData.map((_, index) => (
+            <View 
+              key={index}
+              style={[
+                styles.indicator,
+                index === activeCardIndex && styles.indicatorActive
+              ]}
+            />
           ))}
-          <TouchableOpacity style={[styles.addCardButton, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <Ionicons name="add" size={32} color={colors.primary} />
-            <Text style={[styles.addCardText, { color: colors.textSecondary }]}>Add Card</Text>
-          </TouchableOpacity>
-        </ScrollView>
-
-        <View style={styles.actionsRow}>
-          <TouchableOpacity style={[styles.actionButton, { backgroundColor: colors.card }]}>
-            <Ionicons name="arrow-up" size={24} color={colors.primary} />
-            <Text style={[styles.actionText, { color: colors.text }]}>Send</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.actionButton, { backgroundColor: colors.card }]}>
-            <Ionicons name="arrow-down" size={24} color={colors.primary} />
-            <Text style={[styles.actionText, { color: colors.text }]}>Receive</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.actionButton, { backgroundColor: colors.card }]}>
-            <Ionicons name="swap-horizontal" size={24} color={colors.primary} />
-            <Text style={[styles.actionText, { color: colors.text }]}>Exchange</Text>
-          </TouchableOpacity>
         </View>
 
-        <Modal visible={modalVisible} animationType="slide" transparent={true}>
-          <View style={styles.modalOverlay}>
-            <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
-              <View style={styles.modalHeader}>
-                <Text style={[styles.modalTitle, { color: colors.text }]}>{selectedCard?.type} Details</Text>
-                <TouchableOpacity onPress={() => setModalVisible(false)}>
-                  <Ionicons name="close" size={24} color={colors.text} />
-                </TouchableOpacity>
+        {/* QUICK ACTIONS */}
+        <View style={styles.quickActionsSection}>
+          <Text style={styles.sectionTitle}>Quick Actions</Text>
+          <View style={styles.quickActions}>
+            {/* Block Card */}
+            <TouchableOpacity 
+              style={styles.quickActionItem}
+              onPress={handleBlockCard}
+            >
+              <View style={[styles.quickActionIcon, { backgroundColor: '#EF444420' }]}>
+                <Ionicons name="lock-closed" size={22} color="#EF4444" />
               </View>
-              <View style={[styles.modalCard, { backgroundColor: selectedCard?.color }]}>
-                <Text style={styles.modalCardType}>{selectedCard?.type}</Text>
-                <Text style={styles.modalCardBalance}>${selectedCard?.balance?.toLocaleString()}</Text>
-                <Text style={styles.modalCardNumber}>{selectedCard?.cardNumber}</Text>
+              <Text style={styles.quickActionText}>Block Card</Text>
+            </TouchableOpacity>
+
+            {/* Card Settings */}
+            <TouchableOpacity 
+              style={styles.quickActionItem}
+              onPress={handleCardSettings}
+            >
+              <View style={[styles.quickActionIcon, { backgroundColor: '#8B5CF620' }]}>
+                <Ionicons name="settings" size={22} color="#8B5CF6" />
               </View>
-              <Text style={[styles.transferLabel, { color: colors.text }]}>Quick Transfer</Text>
-              <View style={[styles.transferInput, { backgroundColor: colors.inputBg, borderColor: colors.border }]}>
-                <Text style={[styles.currencySymbol, { color: colors.text }]}>$</Text>
-                <TextInput
-                  style={[styles.amountInput, { color: colors.text }]}
-                  placeholder="0.00"
-                  placeholderTextColor={colors.textSecondary}
-                  keyboardType="numeric"
-                  value={transferAmount}
-                  onChangeText={setTransferAmount}
-                />
+              <Text style={styles.quickActionText}>Settings</Text>
+            </TouchableOpacity>
+
+            {/* Card Limits */}
+            <TouchableOpacity style={styles.quickActionItem}>
+              <View style={[styles.quickActionIcon, { backgroundColor: '#F59E0B20' }]}>
+                <Ionicons name="speedometer" size={22} color="#F59E0B" />
               </View>
-              <TouchableOpacity style={[styles.transferButton, { backgroundColor: colors.primary }]} onPress={handleTransfer}>
-                <Text style={styles.transferButtonText}>Transfer</Text>
-              </TouchableOpacity>
-            </View>
+              <Text style={styles.quickActionText}>Limits</Text>
+            </TouchableOpacity>
+
+            {/* Card Details */}
+            <TouchableOpacity style={styles.quickActionItem}>
+              <View style={[styles.quickActionIcon, { backgroundColor: '#10B98120' }]}>
+                <Ionicons name="document-text" size={22} color="#10B981" />
+              </View>
+              <Text style={styles.quickActionText}>Details</Text>
+            </TouchableOpacity>
           </View>
-        </Modal>
+        </View>
+
+        {/* TRANSAKCIJE KARTICE */}
+        <View style={styles.transactionsSection}>
+          <SectionHeader title="Card Transactions" showSeeMore={false} />
+          <View style={styles.transactionsList}>
+            {cardTransactions.map((transaction) => (
+              <TransactionItem 
+                key={transaction.id}
+                transaction={transaction}
+                onPress={() => {
+                  setSelectedTransaction(transaction);
+                  setDetailModalVisible(true);
+                }}
+              />
+            ))}
+          </View>
+        </View>
+
+        {/* Prazan prostor za tab bar */}
+        <View style={{ height: 100 }} />
       </ScrollView>
+
+      {/* MODAL */}
+      <TransactionDetailModal 
+        visible={detailModalVisible}
+        onClose={() => setDetailModalVisible(false)}
+        transaction={selectedTransaction}
+      />
     </SafeAreaView>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    backgroundColor: '#0F0F1E',
   },
+  // Zaglavlje
   header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    marginTop: 10,
     marginBottom: 20,
   },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-  },
-  balanceCard: {
-    borderRadius: 24,
-    padding: 24,
-    marginBottom: 24,
-    position: "relative",
-    overflow: "hidden",
-  },
-  balanceLabel: {
-    fontSize: 16,
-    color: "#333",
-    marginBottom: 8,
-  },
-  balanceRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  balanceAmount: {
-    fontSize: 36,
-    fontWeight: "bold",
-    color: "#333",
-  },
-  percentageBadge: {
-    backgroundColor: "#FFF",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  percentageText: {
-    color: "#4CAF50",
-    fontWeight: "600",
-    fontSize: 12,
-  },
-  moneyIcons: {
-    position: "absolute",
-    right: 20,
-    top: 20,
-    flexDirection: "row",
-  },
-  moneyIcon: {
+    fontFamily: 'Poppins-Bold',
     fontSize: 24,
-    marginLeft: -8,
+    color: '#FFFFFF',
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 16,
+  addButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: '#1E1E3A',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  cardsScroll: {
-    marginBottom: 24,
+  // Carousel
+  carouselContainer: {
+    paddingHorizontal: 20,
   },
-  cardItem: {
-    width: 160,
-    borderRadius: 20,
-    padding: 16,
-    marginRight: 12,
+  cardContainer: {
+    width: CARD_WIDTH,
+    marginRight: 20,
   },
-  cardHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  cardType: {
-    fontSize: 12,
-    color: "#333",
-  },
-  mastercardLogo: {
-    flexDirection: "row",
-  },
-  mcCircle1: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: "#EB001B",
-  },
-  mcCircle2: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: "#F79E1B",
-    marginLeft: -6,
-  },
-  visaLogo: {
-    fontSize: 14,
-    fontWeight: "bold",
-    color: "#1A1F71",
-    fontStyle: "italic",
-  },
-  cardBalanceLabel: {
-    fontSize: 12,
-    color: "#666",
-  },
-  cardBalance: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#333",
-    marginVertical: 4,
-  },
-  cardNumber: {
-    fontSize: 12,
-    color: "#666",
-    marginTop: 8,
-  },
-  addCardButton: {
-    width: 160,
-    borderRadius: 20,
-    padding: 16,
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 2,
-    borderStyle: "dashed",
-  },
-  addCardText: {
-    marginTop: 8,
-    fontSize: 14,
-  },
-  actionsRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    gap: 12,
-  },
-  actionButton: {
-    flex: 1,
-    borderRadius: 16,
-    padding: 16,
-    alignItems: "center",
-    gap: 8,
-  },
-  actionText: {
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "flex-end",
-  },
-  modalContent: {
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: 24,
-  },
-  modalHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-  },
-  modalCard: {
+  card: {
     borderRadius: 20,
     padding: 20,
-    marginBottom: 24,
+    height: 200,
   },
-  modalCardType: {
+  // Kartica elementi
+  cardTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 20,
+  },
+  cardChip: {
+    width: 40,
+    height: 30,
+    backgroundColor: '#D4AF37',
+    borderRadius: 5,
+    padding: 5,
+    justifyContent: 'space-around',
+  },
+  chipLine: {
+    height: 2,
+    backgroundColor: '#B8960C',
+    borderRadius: 1,
+  },
+  cardTypeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  cardType: {
+    fontFamily: 'Poppins-Bold',
     fontSize: 14,
-    color: "#333",
-    marginBottom: 16,
+    color: '#FFFFFF',
+    letterSpacing: 2,
   },
-  modalCardBalance: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#333",
+  wifiIcon: {
+    marginLeft: 8,
+    transform: [{ rotate: '90deg' }],
   },
-  modalCardNumber: {
-    fontSize: 14,
-    color: "#666",
-    marginTop: 12,
-  },
-  transferLabel: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 12,
-  },
-  transferInput: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    marginBottom: 16,
-  },
-  currencySymbol: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginRight: 8,
-  },
-  amountInput: {
-    flex: 1,
-    fontSize: 20,
-  },
-  transferButton: {
-    borderRadius: 16,
-    padding: 18,
-    alignItems: "center",
-  },
-  transferButtonText: {
-    color: "#FFF",
+  cardNumber: {
+    fontFamily: 'Poppins-SemiBold',
     fontSize: 18,
-    fontWeight: "bold",
+    color: '#FFFFFF',
+    letterSpacing: 3,
+    marginBottom: 15,
   },
-})
+  cardBottomRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  cardLabel: {
+    fontFamily: 'Poppins-Regular',
+    fontSize: 10,
+    color: '#A0A0C0',
+    textTransform: 'uppercase',
+    marginBottom: 2,
+  },
+  cardHolderName: {
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 14,
+    color: '#FFFFFF',
+  },
+  cardExpiry: {
+    alignItems: 'flex-end',
+  },
+  cardExpiryDate: {
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 14,
+    color: '#FFFFFF',
+  },
+  cardBalanceContainer: {
+    marginTop: 10,
+  },
+  cardBalanceLabel: {
+    fontFamily: 'Poppins-Regular',
+    fontSize: 10,
+    color: '#A0A0C0',
+    textTransform: 'uppercase',
+  },
+  cardBalance: {
+    fontFamily: 'Poppins-Bold',
+    fontSize: 22,
+    color: '#FFFFFF',
+  },
+  // Indikatori
+  indicators: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 15,
+    marginBottom: 25,
+  },
+  indicator: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#3D3D6B',
+    marginHorizontal: 4,
+  },
+  indicatorActive: {
+    backgroundColor: '#8B5CF6',
+    width: 24,
+  },
+  // Quick Actions
+  quickActionsSection: {
+    paddingHorizontal: 20,
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 16,
+    color: '#FFFFFF',
+    marginBottom: 15,
+  },
+  quickActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  quickActionItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  quickActionIcon: {
+    width: 50,
+    height: 50,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  quickActionText: {
+    fontFamily: 'Poppins-Medium',
+    fontSize: 11,
+    color: '#A0A0C0',
+    textAlign: 'center',
+  },
+  // Transakcije
+  transactionsSection: {
+    paddingHorizontal: 20,
+  },
+  transactionsList: {
+    marginTop: 5,
+  },
+});
+
+export default CardsScreen;

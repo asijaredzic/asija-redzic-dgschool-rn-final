@@ -1,12 +1,32 @@
-{
-  "users": [
-    {
-      "id": 1,
-      "name": "Asija",
-      "email": "asija@example.com",
-      "password": "password123",
-      "balance": 8689,
-      "avatar": "👋"
-    }
-  ]
-}
+[
+  {
+    "id": "1",
+    "username": "siyam",
+    "password": "1234",
+    "fullName": "Siyam Ali",
+    "avatar": "https://randomuser.me/api/portraits/men/32.jpg",
+    "totalBalance": 17298.92,
+    "income": 1132151,
+    "outcome": 1132151
+  },
+  {
+    "id": "2",
+    "username": "demo",
+    "password": "demo",
+    "fullName": "Demo User",
+    "avatar": "https://randomuser.me/api/portraits/women/44.jpg",
+    "totalBalance": 8549.50,
+    "income": 5000,
+    "outcome": 2500
+  },
+  {
+    "id": "3",
+    "username": "student",
+    "password": "student",
+    "fullName": "Student User",
+    "avatar": "https://randomuser.me/api/portraits/women/22.jpg",
+    "totalBalance": 1250.75,
+    "income": 800,
+    "outcome": 350
+  }
+]
