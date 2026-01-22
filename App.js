@@ -1,112 +1,158 @@
-// App.js - Glavna datoteka koja pokrece cijelu aplikaciju
+// App.js - Glavni fajl aplikacije
+// Ovdje se pokrece cijela aplikacija i postavlja navigacija
+// Ucitavamo fontove, postavljamo AuthProvider i definisemo navigaciju
 
 import React from 'react';
-import { StatusBar } from 'react-native';
-
-// Uvozimo NavigationContainer koji omogucava navigaciju
+import { StatusBar, View, ActivityIndicator, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
-
-// Uvozimo createBottomTabNavigator za donji tab meni
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-
-// Uvozimo ikone
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
-// Uvozimo AuthProvider i useAuth hook iz naseg AuthContext-a
+// Uvozimo fontove - Poppins font sa razlicitim tezinama
+import {
+  useFonts,
+  Poppins_400Regular,
+  Poppins_500Medium,
+  Poppins_600SemiBold,
+  Poppins_700Bold,
+} from '@expo-google-fonts/poppins';
+
+// Uvozimo AuthProvider i useAuth hook za autentifikaciju
 import { AuthProvider, useAuth } from './context/AuthContext';
 
-// Uvozimo sve ekrane
+// Uvozimo sve ekrane aplikacije
 import LoginScreen from './screens/LoginScreen';
 import HomeScreen from './screens/HomeScreen';
-import WalletScreen from './screens/WalletScreen';
+import OverviewScreen from './screens/OverviewScreen';
 import CardsScreen from './screens/CardsScreen';
 import SettingsScreen from './screens/SettingsScreen';
 
-// Kreiramo Tab Navigator
-// Tab Navigator je navigacija sa tabovima na dnu ekrana
+// Kreiramo navigatore
+// Stack navigator - za prijavu/odjavu (linearna navigacija)
+const Stack = createNativeStackNavigator();
+// Tab navigator - za donji meni (klikanje izmedju ekrana)
 const Tab = createBottomTabNavigator();
 
-// KOMPONENTA GLAVNE APLIKACIJE SA NAVIGACIJOM
-function MainApp() {
-  // Uzimamo isLoggedIn iz AuthContext-a
-  // isLoggedIn je true ako je korisnik ulogovan, false ako nije
-  const { isLoggedIn } = useAuth();
-
-  // Ako korisnik NIJE ulogovan, prikazujemo LoginScreen
-  if (!isLoggedIn) {
-    return <LoginScreen />;
-  }
-
-  // Ako JE ulogovan, prikazujemo Tab Navigator sa 5 ekrana
+// BottomTabs komponenta - donji meni sa tabovima
+// Prikazuje se samo kada je korisnik prijavljen
+const BottomTabs = () => {
   return (
     <Tab.Navigator
+      // Opcije za sve tabove
       screenOptions={({ route }) => ({
-        // Ova funkcija odredjuje koju ikonu prikazati za svaki tab
+        // Ikona za svaki tab - razlicita ikona za svaki ekran
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
 
-          // Biramo ikonu na osnovu imena rute
-          if (route.name === 'Wallet') {
-            iconName = focused ? 'wallet' : 'wallet-outline';
-          } else if (route.name === 'Stats') {
-            iconName = focused ? 'stats-chart' : 'stats-chart-outline';
-          } else if (route.name === 'Home') {
+          // Odredjujemo ikonu na osnovu imena rute
+          if (route.name === 'Home') {
             iconName = focused ? 'home' : 'home-outline';
+          } else if (route.name === 'Overview') {
+            iconName = focused ? 'stats-chart' : 'stats-chart-outline';
           } else if (route.name === 'Cards') {
             iconName = focused ? 'card' : 'card-outline';
           } else if (route.name === 'Settings') {
             iconName = focused ? 'settings' : 'settings-outline';
           }
 
-          // Vracamo Ionicons komponentu sa odabranom ikonom
           return <Ionicons name={iconName} size={size} color={color} />;
         },
-        // Boja aktivnog taba (zelena)
-        tabBarActiveTintColor: '#4ADE80',
-        // Boja neaktivnog taba (siva)
-        tabBarInactiveTintColor: '#6B7280',
         // Stilovi za tab bar
+        tabBarActiveTintColor: '#8B5CF6', // Ljubicasta boja kada je aktivan
+        tabBarInactiveTintColor: '#6B7280', // Siva boja kada nije aktivan
         tabBarStyle: {
-          backgroundColor: '#1A1A24',  // Tamna pozadina
-          borderTopWidth: 0,           // Bez gornje linije
-          height: 80,                  // Visina tab bara
-          paddingBottom: 20,
+          backgroundColor: '#1A1A2E', // Tamna pozadina
+          borderTopWidth: 0, // Bez gornje linije
+          height: 70, // Visina tab bara
+          paddingBottom: 10,
           paddingTop: 10,
-          position: 'absolute',        // Fiksirana pozicija
-          borderTopLeftRadius: 24,     // Zaobljeni uglovi
-          borderTopRightRadius: 24,
+          position: 'absolute', // Fiksiran na dnu
+          borderTopLeftRadius: 20, // Zaobljeni uglovi
+          borderTopRightRadius: 20,
+          elevation: 0, // Bez sjene na Androidu
+          shadowOpacity: 0, // Bez sjene na iOS-u
         },
         tabBarLabelStyle: {
+          fontFamily: 'Poppins-Medium',
           fontSize: 11,
         },
-        // Sakrivamo header jer imamo svoj custom header u svakom ekranu
-        headerShown: false,
+        headerShown: false, // Ne prikazuj header
       })}
     >
-      {/* Definisemo sve ekrane u Tab Navigator-u */}
-      <Tab.Screen name="Wallet" component={WalletScreen} />
-      <Tab.Screen name="Stats" component={HomeScreen} />
+      {/* Definisemo sve tabove */}
       <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Overview" component={OverviewScreen} />
       <Tab.Screen name="Cards" component={CardsScreen} />
       <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>
   );
-}
+};
 
-// GLAVNA APP KOMPONENTA
-// Ovo je komponenta koju React Native ucitava na pocetku
-export default function App() {
+// AppNavigator komponenta - odlucuje koji ekran prikazati
+// Ako je korisnik prijavljen, prikazuje BottomTabs
+// Ako nije prijavljen, prikazuje LoginScreen
+const AppNavigator = () => {
+  // Dohvatamo korisnika iz AuthContext-a
+  const { user } = useAuth();
+
   return (
-    // AuthProvider "obavija" cijelu aplikaciju
-    // Tako sve komponente unutar mogu pristupiti podacima o korisniku
-    <AuthProvider>
-      {/* NavigationContainer omogucava navigaciju izmedju ekrana */}
-      <NavigationContainer>
-        {/* StatusBar podesava izgled gornje trake na telefonu */}
-        <StatusBar barStyle="light-content" backgroundColor="#0D0D12" />
-        {/* MainApp je nasa glavna aplikacija */}
-        <MainApp />
-      </NavigationContainer>
-    </AuthProvider>
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      {user ? (
+        // Korisnik JE prijavljen - prikazujemo glavne ekrane
+        <Stack.Screen name="Main" component={BottomTabs} />
+      ) : (
+        // Korisnik NIJE prijavljen - prikazujemo login ekran
+        <Stack.Screen name="Login" component={LoginScreen} />
+      )}
+    </Stack.Navigator>
+  );
+};
+
+// Glavna App komponenta - ulazna tacka aplikacije
+export default function App() {
+  // Ucitavamo Poppins fontove sa razlicitim tezinama
+  // useFonts hook vraca [fontsLoaded] - true kada su fontovi ucitani
+  const [fontsLoaded] = useFonts({
+    'Poppins-Regular': Poppins_400Regular,
+    'Poppins-Medium': Poppins_500Medium,
+    'Poppins-SemiBold': Poppins_600SemiBold,
+    'Poppins-Bold': Poppins_700Bold,
+  });
+
+  // Dok se fontovi ucitavaju, prikazujemo loading spinner
+  if (!fontsLoaded) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#8B5CF6" />
+      </View>
+    );
+  }
+
+  // Kada su fontovi ucitani, prikazujemo aplikaciju
+  return (
+    // SafeAreaProvider osigurava da sadrzaj ne ide ispod notch-a ili status bara
+    <SafeAreaProvider>
+      {/* AuthProvider omata cijelu aplikaciju da bi svi ekrani imali pristup auth podacima */}
+      <AuthProvider>
+        {/* StatusBar podesava izgled status bara (vrijeme, baterija, itd.) */}
+        <StatusBar barStyle="light-content" backgroundColor="#0F0F1E" />
+        {/* NavigationContainer omogucava navigaciju izmedju ekrana */}
+        <NavigationContainer>
+          <AppNavigator />
+        </NavigationContainer>
+      </AuthProvider>
+    </SafeAreaProvider>
   );
 }
+
+// Stilovi za loading ekran
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#0F0F1E',
+  },
+});
