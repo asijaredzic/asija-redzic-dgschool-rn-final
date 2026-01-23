@@ -3,43 +3,42 @@
 // Koristi komponente za cist kod
 
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  ScrollView, 
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
   TouchableOpacity,
   StatusBar,
-  Animated
+  Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
-// Uvoz komponenti
-import { 
-  CreditCard, 
-  StatisticsBar, 
+// Komponente
+import {
+  CreditCard,
+  StatisticsBar,
   CategoryFilter,
   SectionHeader,
   TransactionItem,
-  TransactionDetailModal
+  TransactionDetailModal,
 } from '../components';
 
-// Uvoz podataka
-import transactionsData from '../data/transactions.json';
-import cardsData from '../data/cards.json';
-import categoriesData from '../data/categories.json';
-import balanceHistoryData from '../data/balanceHistory.json';
+// Podaci
+import rawTransactions from '../data/transactions.json';
+import rawCards from '../data/cards.json';
+import rawCategories from '../data/categories.json';
+import rawBalanceHistory from '../data/balanceHistory.json';
 
 const OverviewScreen = ({ navigation }) => {
-
-  // State
+  // STATE
   const [selectedDay, setSelectedDay] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
 
-  // Animacije
+  // ANIMACIJA
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -50,34 +49,37 @@ const OverviewScreen = ({ navigation }) => {
     }).start();
   }, []);
 
-  // SIGURNO DOHVATANJE PODATAKA
-  const card = cardsData?.[0] || null;
+  // =========================
+  // 🔒 NORMALIZACIJA PODATAKA
+  // =========================
 
-  const weeklyStats = balanceHistoryData?.weeklyStats || [];
+  const cards = Array.isArray(rawCards) ? rawCards : [];
+  const transactions = Array.isArray(rawTransactions) ? rawTransactions : [];
+  const categories = Array.isArray(rawCategories) ? rawCategories : [];
+  const weeklyStats = Array.isArray(rawBalanceHistory?.weeklyStats)
+    ? rawBalanceHistory.weeklyStats
+    : [];
+
+  const card = cards[0] ?? null;
 
   const maxAmount =
     weeklyStats.length > 0
-      ? Math.max(...weeklyStats.map(stat => stat.amount))
+      ? Math.max(...weeklyStats.map(stat => Number(stat?.amount) || 0))
       : 0;
 
-  // SIGURNO DOHVATANJE TRANSAKCIJA
-const safeTransactions = Array.isArray(transactionsData)
-  ? transactionsData
-  : [];
+  const filteredTransactions =
+    selectedCategory === 'all'
+      ? transactions
+      : transactions.filter(t => {
+          if (!t) return false;
+          if (selectedCategory === 'expenses') return t.amount < 0;
+          if (selectedCategory === 'income') return t.amount > 0;
+          if (selectedCategory === 'transfers') return t.category === 'transfer';
+          return true;
+        });
 
-const filteredTransactions =
-  selectedCategory === 'all'
-    ? safeTransactions
-    : safeTransactions.filter(t => {
-        if (selectedCategory === 'expenses') return t.amount < 0;
-        if (selectedCategory === 'income') return t.amount > 0;
-        if (selectedCategory === 'transfers') return t.category === 'transfer';
-        return true;
-      });
-
-
-  // Handleri
-  const handleTransactionPress = (transaction) => {
+  // HANDLERI
+  const handleTransactionPress = transaction => {
     setSelectedTransaction(transaction);
     setDetailModalVisible(true);
   };
@@ -90,40 +92,42 @@ const filteredTransactions =
       <StatusBar barStyle="light-content" backgroundColor="#0F0F1E" />
 
       <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-        {/* ZAGLAVLJE */}
+        {/* HEADER */}
         <View style={styles.header}>
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => navigation.goBack()}
             style={styles.backButton}
           >
             <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
           </TouchableOpacity>
+
           <Text style={styles.headerTitle}>Overview</Text>
+
           <TouchableOpacity style={styles.menuButton}>
             <Ionicons name="ellipsis-vertical" size={20} color="#FFFFFF" />
           </TouchableOpacity>
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false}>
-          {/* MJESEC I BALANS */}
+          {/* MONTH */}
           <View style={styles.monthSection}>
             <Text style={styles.monthText}>{currentMonth}</Text>
             <Text style={styles.balanceAmount}>$1,924.30</Text>
             <Text style={styles.balanceChange}>-$433.35</Text>
           </View>
 
-          {/* KARTICA */}
-          {card && <CreditCard card={card} style={styles.cardSection} />}
+          {/* CARD */}
+          {card ? <CreditCard card={card} style={styles.cardSection} /> : null}
 
-          {/* STATISTIKA */}
+          {/* STATISTICS */}
           <SectionHeader title="Statistics" onSeeMore={() => {}} />
 
           <View style={styles.statisticsContainer}>
             {weeklyStats.map((stat, index) => (
               <StatisticsBar
-                key={stat?.day || index}
-                day={stat?.day}
-                amount={stat?.amount || 0}
+                key={stat?.day ?? index}
+                day={stat?.day ?? ''}
+                amount={Number(stat?.amount) || 0}
                 maxAmount={maxAmount}
                 isSelected={selectedDay === index}
                 onPress={() =>
@@ -133,7 +137,7 @@ const filteredTransactions =
             ))}
           </View>
 
-          {/* DATUM I FILTER */}
+          {/* DATE */}
           <View style={styles.dateHeader}>
             <Text style={styles.dateText}>{currentDate}</Text>
             <TouchableOpacity>
@@ -141,21 +145,21 @@ const filteredTransactions =
             </TouchableOpacity>
           </View>
 
-          {/* KATEGORIJE FILTER */}
+          {/* CATEGORY FILTER */}
           <CategoryFilter
             categories={[
               { id: 'all', name: 'All' },
-              ...(categoriesData || []).filter(c => c?.name),
+              ...categories.filter(c => c?.name),
             ]}
             selectedCategory={selectedCategory}
             onSelectCategory={setSelectedCategory}
           />
 
-          {/* LISTA TRANSAKCIJA */}
+          {/* TRANSACTIONS */}
           <View style={styles.transactionsList}>
-            {(filteredTransactions || []).slice(0, 8).map(transaction => (
+            {filteredTransactions.slice(0, 8).map(transaction => (
               <TransactionItem
-                key={transaction.id}
+                key={transaction?.id}
                 transaction={transaction}
                 onPress={() => handleTransactionPress(transaction)}
               />
