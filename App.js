@@ -10,7 +10,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
-// Uvozimo fontove - Poppins font sa razlicitim tezinama
+// Uvozenje fontova - Poppins font sa razlicitim tezinama
 import {
   useFonts,
   Poppins_400Regular,
