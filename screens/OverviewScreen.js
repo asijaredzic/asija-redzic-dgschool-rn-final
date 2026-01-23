@@ -60,15 +60,21 @@ const OverviewScreen = ({ navigation }) => {
       ? Math.max(...weeklyStats.map(stat => stat.amount))
       : 0;
 
-  const filteredTransactions =
-    selectedCategory === 'all'
-      ? transactionsData || []
-      : (transactionsData || []).filter(t => {
-          if (selectedCategory === 'expenses') return t.amount < 0;
-          if (selectedCategory === 'income') return t.amount > 0;
-          if (selectedCategory === 'transfers') return t.category === 'transfer';
-          return true;
-        });
+  // SIGURNO DOHVATANJE TRANSAKCIJA
+const safeTransactions = Array.isArray(transactionsData)
+  ? transactionsData
+  : [];
+
+const filteredTransactions =
+  selectedCategory === 'all'
+    ? safeTransactions
+    : safeTransactions.filter(t => {
+        if (selectedCategory === 'expenses') return t.amount < 0;
+        if (selectedCategory === 'income') return t.amount > 0;
+        if (selectedCategory === 'transfers') return t.category === 'transfer';
+        return true;
+      });
+
 
   // Handleri
   const handleTransactionPress = (transaction) => {
@@ -147,7 +153,7 @@ const OverviewScreen = ({ navigation }) => {
 
           {/* LISTA TRANSAKCIJA */}
           <View style={styles.transactionsList}>
-            {filteredTransactions.slice(0, 8).map(transaction => (
+            {(filteredTransactions || []).slice(0, 8).map(transaction => (
               <TransactionItem
                 key={transaction.id}
                 transaction={transaction}
