@@ -1,41 +1,64 @@
-// CardsScreen.js - Ekran za pregled kartica
-// Prikazuje carousel sa karticama i quick actions
-// Ima animacije za lijepi prikaz
+// ============================================
+// CARDSSCREEN.JS - EKRAN SA MOJIM KARTICAMA
+// ============================================
+// Ovdje prikazujem sve kartice koje korisnik ima.
+// Kartice se mogu listati horizontalno (carousel).
+// Ispod kartica imam brze akcije i transakcije.
 
 import React, { useState, useRef, useEffect } from 'react';
+
 import { 
   View, 
   Text, 
   StyleSheet, 
   ScrollView, 
   TouchableOpacity,
-  Dimensions,
-  FlatList,
+  Dimensions,      // Za dimenzije ekrana
+  FlatList,        // Za carousel kartica
   StatusBar,
   Animated,
-  Alert
+  Alert            // Za popup poruke
 } from 'react-native';
+
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
-// Uvoz podataka
+// Ucitavam podatke
 import cardsData from '../data/cards.json';
 import transactionsData from '../data/transactions.json';
 
-// Uvoz komponenti
+// Moje komponente
 import { TransactionItem, SectionHeader, TransactionDetailModal } from '../components';
 
-// Dimenzije ekrana
+
+// ============================================
+// DIMENZIJE EKRANA
+// ============================================
+// Uzimam sirinu ekrana da znam koliko je velika kartica
 const { width } = Dimensions.get('window');
-const CARD_WIDTH = width - 60;
+const CARD_WIDTH = width - 60;  // Kartica je malo manja od ekrana
+
 
 const CardsScreen = () => {
 
+  // ============================================
+  // STATE VARIJABLE
+  // ============================================
+  
+  // Koja kartica je trenutno vidljiva (indeks u listi)
   const [activeCardIndex, setActiveCardIndex] = useState(0);
+  
+  // Da li je modal za detalje otvoren
   const [detailModalVisible, setDetailModalVisible] = useState(false);
+  
+  // Koja transakcija je odabrana
   const [selectedTransaction, setSelectedTransaction] = useState(null);
 
+
+  // ============================================
+  // ANIMACIJE
+  // ============================================
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(20)).current;
 
@@ -54,11 +77,19 @@ const CardsScreen = () => {
     ]).start();
   }, []);
 
-  // SIGURNE FORMAT FUNKCIJE
+
+  // ============================================
+  // POMOCNE FUNKCIJE ZA FORMATIRANJE
+  // ============================================
+  
+  // Formatira broj kartice - stavlja razmake svakih 4 cifre
+  // "1234567890123456" postaje "1234 5678 9012 3456"
   const formatCardNumber = (number = '') => {
     return number.replace(/(.{4})/g, '$1 ').trim();
   };
 
+  // Formatira novac - dodaje $ i zareze
+  // 1234.56 postaje "$1,234.56"
   const formatBalance = (balance = 0) => {
     return '$' + balance.toLocaleString('en-US', {
       minimumFractionDigits: 2,
@@ -66,43 +97,68 @@ const CardsScreen = () => {
     });
   };
 
+
+  // ============================================
+  // CAROUSEL SCROLL - PRATIM KOJA KARTICA JE VIDLJIVA
+  // ============================================
   const handleScroll = (event) => {
+    // Uzimam poziciju skrolovanja
     const scrollPosition = event.nativeEvent.contentOffset.x;
+    
+    // Racunam indeks kartice na osnovu pozicije
     const index = Math.round(scrollPosition / CARD_WIDTH);
+    
+    // Spremam koji je indeks aktivan
     setActiveCardIndex(index);
   };
 
-  // Quick actions
+
+  // ============================================
+  // FUNKCIJE ZA BRZE AKCIJE
+  // ============================================
+  
+  // Blokiranje kartice
   const handleBlockCard = () => {
     Alert.alert(
       'Blokiranje kartice',
       'Da li ste sigurni da zelite blokirati ovu karticu?',
       [
         { text: 'Odustani', style: 'cancel' },
-        { text: 'Blokiraj', style: 'destructive', onPress: () => {
-          Alert.alert('Uspjesno', 'Kartica je blokirana');
-        }},
+        { 
+          text: 'Blokiraj', 
+          style: 'destructive',  // Crveno dugme
+          onPress: () => {
+            Alert.alert('Uspjesno', 'Kartica je blokirana');
+          }
+        },
       ]
     );
   };
 
+  // Postavke kartice
   const handleCardSettings = () => {
     Alert.alert('Postavke kartice', 'Ovdje bi bile postavke kartice');
   };
 
+  // Dodavanje nove kartice
   const handleAddCard = () => {
     Alert.alert('Nova kartica', 'Ovdje bi se dodala nova kartica');
   };
 
-  // Render kartice
+
+  // ============================================
+  // RENDEROVANJE JEDNE KARTICE
+  // ============================================
+  // Ova funkcija crta jednu karticu u carousel-u
   const renderCard = ({ item }) => {
+    // Ako nema podataka, ne crtam nista
     if (!item) return null;
 
+    // Odredujem boje na osnovu tipa kartice
     const type = item.type || '';
-    const gradientColors =
-      type === 'visa'
-        ? ['#1E3A5F', '#0D1B2A']
-        : ['#2D2D5A', '#1E1E3A'];
+    const gradientColors = type === 'visa'
+      ? ['#1E3A5F', '#0D1B2A']    // Tamno plava za Visa
+      : ['#2D2D5A', '#1E1E3A'];   // Ljubicasta za ostale
 
     return (
       <Animated.View
@@ -120,14 +176,16 @@ const CardsScreen = () => {
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
         >
-          {/* Gornji red */}
+          {/* ============ GORNJI RED ============ */}
           <View style={styles.cardTopRow}>
+            {/* Chip kartice - zlatni pravougaonik */}
             <View style={styles.cardChip}>
               <View style={styles.chipLine} />
               <View style={styles.chipLine} />
               <View style={styles.chipLine} />
             </View>
 
+            {/* Tip kartice i wifi ikona */}
             <View style={styles.cardTypeContainer}>
               <Text style={styles.cardType}>
                 {type.toUpperCase()}
@@ -141,19 +199,22 @@ const CardsScreen = () => {
             </View>
           </View>
 
-          {/* Broj kartice */}
+          {/* ============ BROJ KARTICE ============ */}
           <Text style={styles.cardNumber}>
             {formatCardNumber(item.number)}
           </Text>
 
-          {/* Donji red */}
+          {/* ============ DONJI RED ============ */}
           <View style={styles.cardBottomRow}>
+            {/* Ime vlasnika */}
             <View>
               <Text style={styles.cardLabel}>Card Holder</Text>
               <Text style={styles.cardHolderName}>
                 {item.holder || ''}
               </Text>
             </View>
+            
+            {/* Datum isteka */}
             <View style={styles.cardExpiry}>
               <Text style={styles.cardLabel}>Expires</Text>
               <Text style={styles.cardExpiryDate}>
@@ -162,7 +223,7 @@ const CardsScreen = () => {
             </View>
           </View>
 
-          {/* Balans */}
+          {/* ============ BALANS ============ */}
           <View style={styles.cardBalanceContainer}>
             <Text style={styles.cardBalanceLabel}>Balance</Text>
             <Text style={styles.cardBalance}>
@@ -174,14 +235,21 @@ const CardsScreen = () => {
     );
   };
 
+
+  // Uzimam prve 4 transakcije za prikaz
   const cardTransactions = (transactionsData || []).slice(0, 4);
 
+
+  // ============================================
+  // CRTAM EKRAN
+  // ============================================
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#0F0F1E" />
 
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* HEADER */}
+        
+        {/* ============ ZAGLAVLJE ============ */}
         <View style={styles.header}>
           <Text style={styles.headerTitle}>My Cards</Text>
           <TouchableOpacity onPress={handleAddCard} style={styles.addButton}>
@@ -189,22 +257,25 @@ const CardsScreen = () => {
           </TouchableOpacity>
         </View>
 
-        {/* CAROUSEL */}
+
+        {/* ============ CAROUSEL SA KARTICAMA ============ */}
         <FlatList
           data={cardsData || []}
           renderItem={renderCard}
           keyExtractor={(item, index) => String(item?.id ?? index)}
-          horizontal
-          pagingEnabled
+          horizontal                           // Horizontalno skrolovanje
+          pagingEnabled                        // Skroluje se kartica po kartica
           showsHorizontalScrollIndicator={false}
-          snapToInterval={CARD_WIDTH + 20}
-          decelerationRate="fast"
+          snapToInterval={CARD_WIDTH + 20}     // Svaka kartica "skace" na mjesto
+          decelerationRate="fast"              // Brzo se zaustavlja
           contentContainerStyle={styles.carouselContainer}
           onScroll={handleScroll}
           scrollEventThrottle={16}
         />
 
-        {/* INDIKATORI */}
+
+        {/* ============ INDIKATORI (TACKICE) ============ */}
+        {/* Pokazuju koja kartica je trenutno vidljiva */}
         <View style={styles.indicators}>
           {(cardsData || []).map((_, index) => (
             <View
@@ -217,10 +288,13 @@ const CardsScreen = () => {
           ))}
         </View>
 
-        {/* QUICK ACTIONS */}
+
+        {/* ============ BRZE AKCIJE ============ */}
         <View style={styles.quickActionsSection}>
           <Text style={styles.sectionTitle}>Quick Actions</Text>
+          
           <View style={styles.quickActions}>
+            {/* Blokiraj karticu */}
             <TouchableOpacity style={styles.quickActionItem} onPress={handleBlockCard}>
               <View style={[styles.quickActionIcon, { backgroundColor: '#EF444420' }]}>
                 <Ionicons name="lock-closed" size={22} color="#EF4444" />
@@ -228,6 +302,7 @@ const CardsScreen = () => {
               <Text style={styles.quickActionText}>Block Card</Text>
             </TouchableOpacity>
 
+            {/* Postavke */}
             <TouchableOpacity style={styles.quickActionItem} onPress={handleCardSettings}>
               <View style={[styles.quickActionIcon, { backgroundColor: '#8B5CF620' }]}>
                 <Ionicons name="settings" size={22} color="#8B5CF6" />
@@ -235,6 +310,7 @@ const CardsScreen = () => {
               <Text style={styles.quickActionText}>Settings</Text>
             </TouchableOpacity>
 
+            {/* Limiti */}
             <TouchableOpacity style={styles.quickActionItem}>
               <View style={[styles.quickActionIcon, { backgroundColor: '#F59E0B20' }]}>
                 <Ionicons name="speedometer" size={22} color="#F59E0B" />
@@ -242,6 +318,7 @@ const CardsScreen = () => {
               <Text style={styles.quickActionText}>Limits</Text>
             </TouchableOpacity>
 
+            {/* Detalji */}
             <TouchableOpacity style={styles.quickActionItem}>
               <View style={[styles.quickActionIcon, { backgroundColor: '#10B98120' }]}>
                 <Ionicons name="document-text" size={22} color="#10B981" />
@@ -251,9 +328,11 @@ const CardsScreen = () => {
           </View>
         </View>
 
-        {/* TRANSAKCIJE */}
+
+        {/* ============ TRANSAKCIJE KARTICE ============ */}
         <View style={styles.transactionsSection}>
           <SectionHeader title="Card Transactions" showSeeMore={false} />
+          
           <View style={styles.transactionsList}>
             {cardTransactions.map(transaction => (
               <TransactionItem
@@ -271,6 +350,8 @@ const CardsScreen = () => {
         <View style={{ height: 100 }} />
       </ScrollView>
 
+
+      {/* ============ MODAL ZA DETALJE ============ */}
       <TransactionDetailModal
         visible={detailModalVisible}
         onClose={() => setDetailModalVisible(false)}
@@ -280,11 +361,17 @@ const CardsScreen = () => {
   );
 };
 
+
+// ============================================
+// STILOVI
+// ============================================
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#0F0F1E',
   },
+  
+  // Zaglavlje
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -306,42 +393,54 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  
+  // Carousel
   carouselContainer: {
     paddingHorizontal: 20,
   },
+  
+  // Kontejner jedne kartice
   cardContainer: {
-  width: CARD_WIDTH,
-  marginRight: 20,
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: 10 },
-  shadowOpacity: 0.25,
-  shadowRadius: 20,
-  elevation: 10,
+    width: CARD_WIDTH,
+    marginRight: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+    elevation: 10,
   },
+  
+  // Sama kartica
   card: {
-  borderRadius: 24,
-  paddingHorizontal: 24,
-  paddingVertical: 22,
-  height: 230, 
+    borderRadius: 24,
+    paddingHorizontal: 24,
+    paddingVertical: 22,
+    height: 230, 
   },
+  
+  // Gornji red kartice
   cardTopRow: {
-  flexDirection: 'row',
-  justifyContent: 'space-between',
-  marginBottom: 26,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 26,
   },
+  
+  // Chip (zlatni pravougaonik)
   cardChip: {
-  width: 44,
-  height: 32,
-  backgroundColor: '#D4AF37',
-  borderRadius: 6,
-  padding: 6,
-  justifyContent: 'space-around',
+    width: 44,
+    height: 32,
+    backgroundColor: '#D4AF37',  // Zlatna boja
+    borderRadius: 6,
+    padding: 6,
+    justifyContent: 'space-around',
   },
   chipLine: {
     height: 2,
     backgroundColor: '#B8960C',
     borderRadius: 1,
   },
+  
+  // Tip kartice
   cardTypeContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -354,15 +453,19 @@ const styles = StyleSheet.create({
   },
   wifiIcon: {
     marginLeft: 8,
-    transform: [{ rotate: '90deg' }],
+    transform: [{ rotate: '90deg' }],  // Rotiram ikonu za 90 stepeni
   },
+  
+  // Broj kartice
   cardNumber: {
-  fontFamily: 'Poppins-SemiBold',
-  fontSize: 20,
-  color: '#FFFFFF',
-  letterSpacing: 3.5,
-  marginBottom: 24, 
-},
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 20,
+    color: '#FFFFFF',
+    letterSpacing: 3.5,
+    marginBottom: 24, 
+  },
+  
+  // Donji red
   cardBottomRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -387,21 +490,25 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#FFFFFF',
   },
-cardBalanceContainer: {
-  marginTop: 16,
+  
+  // Balans na kartici
+  cardBalanceContainer: {
+    marginTop: 16,
   },
   cardBalanceLabel: {
-  fontFamily: 'Poppins-Regular',
-  fontSize: 9,
-  color: '#A0A0C0',
-  textTransform: 'uppercase',
-  letterSpacing: 1,
+    fontFamily: 'Poppins-Regular',
+    fontSize: 9,
+    color: '#A0A0C0',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   cardBalance: {
     fontFamily: 'Poppins-Bold',
     fontSize: 22,
     color: '#FFFFFF',
   },
+  
+  // Indikatori (tackice)
   indicators: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -417,8 +524,10 @@ cardBalanceContainer: {
   },
   indicatorActive: {
     backgroundColor: '#8B5CF6',
-    width: 24,
+    width: 24,  // Aktivni indikator je siri
   },
+  
+  // Brze akcije
   quickActionsSection: {
     paddingHorizontal: 20,
     marginBottom: 20,
@@ -451,6 +560,8 @@ cardBalanceContainer: {
     color: '#A0A0C0',
     textAlign: 'center',
   },
+  
+  // Transakcije
   transactionsSection: {
     paddingHorizontal: 20,
   },

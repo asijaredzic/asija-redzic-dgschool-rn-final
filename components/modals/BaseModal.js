@@ -1,58 +1,84 @@
-// BaseModal.js - Osnovna modal komponenta koju koriste svi modali
-// Ovo je "template" za sve popup prozore u aplikaciji
-// Ima animaciju za otvaranje/zatvaranje i tamnu pozadinu
+// ============================================
+// BASEMODAL.JS - OSNOVNI MODAL (POPUP)
+// ============================================
+// Ova komponenta je "temelj" za sve popup prozore u aplikaciji.
+// Ima:
+// - Tamnu pozadinu koja se fade-uje
+// - Bijeli prozor koji klizi odozdo
+// - Naslov i dugme za zatvaranje (X)
+// 
+// Drugi modali (SendModal, ReceiveModal, itd.) koriste ovu komponentu
+// i samo dodaju svoj sadrzaj unutar nje.
 
 import React, { useEffect, useRef } from 'react';
+
 import { 
   View, 
   Text, 
   StyleSheet, 
-  Modal, 
+  Modal,                     // React Native modal
   TouchableOpacity,
   Animated,
   Dimensions,
-  TouchableWithoutFeedback
+  TouchableWithoutFeedback   // Za klik na pozadinu
 } from 'react-native';
+
 import { Ionicons } from '@expo/vector-icons';
 
-// Uzimamo dimenzije ekrana
+
+// Uzimam visinu ekrana za animaciju
 const { height } = Dimensions.get('window');
 
-// Props: visible (da li je modal vidljiv), onClose (funkcija za zatvaranje), title (naslov), children (sadrzaj)
+
+// Komponenta prima:
+// - visible: da li je modal vidljiv
+// - onClose: funkcija za zatvaranje
+// - title: naslov modala
+// - children: sadrzaj koji dolazi unutar modala
 const BaseModal = ({ visible, onClose, title, children }) => {
   
-  // Animirana vrijednost za slide-up efekat
+  // ============================================
+  // ANIMACIJE
+  // ============================================
+  
+  // Animacija za klizanje modala odozdo (pocinje van ekrana)
   const slideAnim = useRef(new Animated.Value(height)).current;
   
-  // Animirana vrijednost za fade efekat pozadine
+  // Animacija za fade pozadine (0 = nevidljivo, 1 = vidljivo)
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
-  // useEffect prati promjene visible prop-a
-  // Kada se modal otvori ili zatvori, pokrece odgovarajucu animaciju
+
+  // ============================================
+  // POKRECEM ANIMACIJE KADA SE MODAL OTVORI/ZATVORI
+  // ============================================
   useEffect(() => {
     if (visible) {
-      // Animacija otvaranja - modal klizi odozdo prema gore
+      // OTVARANJE MODALA
       Animated.parallel([
+        // Pozadina se polako pojavljuje
         Animated.timing(fadeAnim, {
           toValue: 1,
           duration: 300,
           useNativeDriver: true,
         }),
+        // Modal klizi odozdo prema gore
         Animated.spring(slideAnim, {
-          toValue: 0,
+          toValue: 0,        // Dolazi na poziciju 0 (vidljiv)
           tension: 65,
           friction: 11,
           useNativeDriver: true,
         }),
       ]).start();
     } else {
-      // Animacija zatvaranja - modal klizi prema dolje
+      // ZATVARANJE MODALA
       Animated.parallel([
+        // Pozadina nestaje
         Animated.timing(fadeAnim, {
           toValue: 0,
           duration: 200,
           useNativeDriver: true,
         }),
+        // Modal klizi prema dolje (van ekrana)
         Animated.timing(slideAnim, {
           toValue: height,
           duration: 250,
@@ -62,26 +88,31 @@ const BaseModal = ({ visible, onClose, title, children }) => {
     }
   }, [visible]);
 
+
+  // ============================================
+  // CRTAM MODAL
+  // ============================================
   return (
     <Modal
       visible={visible}
-      transparent={true}
-      animationType="none" // Koristimo nasu custom animaciju
-      onRequestClose={onClose}
+      transparent={true}        // Vidim kroz modal (za pozadinu)
+      animationType="none"      // Ne koristim default animaciju
+      onRequestClose={onClose}  // Android back dugme
     >
-      {/* Tamna pozadina koja se fade-uje */}
+      {/* ============ TAMNA POZADINA ============ */}
+      {/* Kada kliknem na pozadinu, zatvaramo modal */}
       <TouchableWithoutFeedback onPress={onClose}>
         <Animated.View style={[styles.overlay, { opacity: fadeAnim }]} />
       </TouchableWithoutFeedback>
       
-      {/* Modal sadrzaj koji klizi */}
+      {/* ============ SADRZAJ MODALA ============ */}
       <Animated.View 
         style={[
           styles.modalContainer,
-          { transform: [{ translateY: slideAnim }] }
+          { transform: [{ translateY: slideAnim }] }  // Animacija klizanja
         ]}
       >
-        {/* Rucka za povlacenje (dekoracija) */}
+        {/* Rucka na vrhu - samo dekoracija */}
         <View style={styles.handle} />
         
         {/* Zaglavlje sa naslovom i X dugmetom */}
@@ -92,7 +123,7 @@ const BaseModal = ({ visible, onClose, title, children }) => {
           </TouchableOpacity>
         </View>
         
-        {/* Sadrzaj modala (children) */}
+        {/* Sadrzaj - ovo je ono sto dolazi iz drugih modala */}
         <View style={styles.content}>
           {children}
         </View>
@@ -101,13 +132,18 @@ const BaseModal = ({ visible, onClose, title, children }) => {
   );
 };
 
+
+// ============================================
+// STILOVI
+// ============================================
 const styles = StyleSheet.create({
-  // Tamna pozadina
+  // Tamna pozadina - prekriva cijeli ekran
   overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    ...StyleSheet.absoluteFillObject,  // Zauzima cijeli ekran
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',  // Crna sa 70% prozirnosti
   },
-  // Kontejner modala
+  
+  // Kontejner modala - bijeli prozor na dnu
   modalContainer: {
     position: 'absolute',
     bottom: 0,
@@ -118,9 +154,10 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 30,
     paddingHorizontal: 20,
     paddingBottom: 40,
-    maxHeight: height * 0.85, // Maksimalno 85% visine ekrana
+    maxHeight: height * 0.85,  // Maksimalno 85% visine ekrana
   },
-  // Rucka na vrhu modala
+  
+  // Rucka na vrhu - mala siva linija
   handle: {
     width: 40,
     height: 4,
@@ -130,23 +167,27 @@ const styles = StyleSheet.create({
     marginTop: 12,
     marginBottom: 20,
   },
-  // Zaglavlje
+  
+  // Zaglavlje sa naslovom i X
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 20,
   },
+  
   // Naslov
   title: {
     fontFamily: 'Poppins-SemiBold',
     fontSize: 20,
     color: '#FFFFFF',
   },
+  
   // Dugme za zatvaranje
   closeButton: {
     padding: 5,
   },
+  
   // Sadrzaj
   content: {
     flex: 1,

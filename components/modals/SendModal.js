@@ -1,8 +1,18 @@
-// SendModal.js - Modal za slanje novca
-// Prikazuje formu za odabir kontakta i unos iznosa
-// Simulira slanje novca (ne salje stvarno jer je ovo demo)
+// ============================================
+// SENDMODAL.JS - POPUP ZA SLANJE NOVCA
+// ============================================
+// Ovaj popup se otvara kada korisnik zeli poslati novac.
+// Ima:
+// - Listu kontakata za odabir
+// - Polje za unos iznosa
+// - Brza dugmad za iznose ($10, $25, $50, $100)
+// - Polje za poruku (opciono)
+// - Dugme "Send Money"
+// 
+// OVO JE DEMO - ne salje stvarni novac!
 
 import React, { useState } from 'react';
+
 import { 
   View, 
   Text, 
@@ -13,62 +23,90 @@ import {
   Image,
   Alert
 } from 'react-native';
+
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import BaseModal from './BaseModal';
 
-// Uvozimo kontakte iz JSON fajla
+// Ucitavam kontakte
 import contacts from '../../data/contacts.json';
 
-// Props: visible (da li je vidljiv), onClose (funkcija za zatvaranje)
+
+// Komponenta prima:
+// - visible: da li je modal vidljiv
+// - onClose: funkcija za zatvaranje
 const SendModal = ({ visible, onClose }) => {
   
-  // State za odabrani kontakt
+  // ============================================
+  // STATE VARIJABLE
+  // ============================================
+  
+  // Koji kontakt je odabran
   const [selectedContact, setSelectedContact] = useState(null);
   
-  // State za uneseni iznos
+  // Koliko novca zelim poslati
   const [amount, setAmount] = useState('');
   
-  // State za poruku (opciono)
+  // Poruka uz transfer (opciono)
   const [message, setMessage] = useState('');
 
-  // Funkcija za slanje novca
+
+  // ============================================
+  // FUNKCIJA ZA SLANJE
+  // ============================================
   const handleSend = () => {
-    // Provjera da li je sve uneseno
+    // Provjera da li je kontakt odabran
     if (!selectedContact) {
       Alert.alert('Greska', 'Molimo odaberite kontakt');
       return;
     }
+    
+    // Provjera da li je iznos validan
     if (!amount || parseFloat(amount) <= 0) {
       Alert.alert('Greska', 'Molimo unesite validan iznos');
       return;
     }
 
-    // Simuliramo uspjesno slanje
+    // Uspjesno "slanje" (demo)
     Alert.alert(
       'Uspjesno!', 
       `Poslali ste $${amount} korisniku ${selectedContact.name}`,
-      [{ text: 'OK', onPress: () => {
-        // Resetujemo formu i zatvaramo modal
-        setSelectedContact(null);
-        setAmount('');
-        setMessage('');
-        onClose();
-      }}]
+      [{ 
+        text: 'OK', 
+        onPress: () => {
+          // Resetujem formu i zatvaram modal
+          setSelectedContact(null);
+          setAmount('');
+          setMessage('');
+          onClose();
+        }
+      }]
     );
   };
 
-  // Renderovanje jednog kontakta u listi
+
+  // ============================================
+  // FUNKCIJA ZA PRIKAZ JEDNOG KONTAKTA
+  // ============================================
   const renderContact = ({ item }) => {
+    // Da li je ovaj kontakt odabran
     const isSelected = selectedContact?.id === item.id;
     
     return (
       <TouchableOpacity
         onPress={() => setSelectedContact(item)}
-        style={[styles.contactItem, isSelected && styles.contactItemSelected]}
+        style={[
+          styles.contactItem, 
+          isSelected && styles.contactItemSelected
+        ]}
       >
+        {/* Slika kontakta */}
         <Image source={{ uri: item.avatar }} style={styles.contactAvatar} />
+        
+        {/* Ime kontakta */}
         <Text style={styles.contactName}>{item.name}</Text>
+        
+        {/* Kvacica ako je odabran */}
         {isSelected && (
           <Ionicons name="checkmark-circle" size={20} color="#8B5CF6" />
         )}
@@ -76,9 +114,14 @@ const SendModal = ({ visible, onClose }) => {
     );
   };
 
+
+  // ============================================
+  // CRTAM MODAL
+  // ============================================
   return (
     <BaseModal visible={visible} onClose={onClose} title="Send Money">
-      {/* Lista kontakata */}
+      
+      {/* ============ LISTA KONTAKATA ============ */}
       <Text style={styles.label}>Select Contact</Text>
       <FlatList
         data={contacts}
@@ -89,7 +132,7 @@ const SendModal = ({ visible, onClose }) => {
         style={styles.contactsList}
       />
 
-      {/* Polje za unos iznosa */}
+      {/* ============ POLJE ZA IZNOS ============ */}
       <Text style={styles.label}>Amount</Text>
       <View style={styles.amountContainer}>
         <Text style={styles.currencySymbol}>$</Text>
@@ -97,13 +140,13 @@ const SendModal = ({ visible, onClose }) => {
           style={styles.amountInput}
           value={amount}
           onChangeText={setAmount}
-          keyboardType="decimal-pad"
+          keyboardType="decimal-pad"  // Pokazuje tastaturu sa brojevima
           placeholder="0.00"
           placeholderTextColor="#A0A0C0"
         />
       </View>
 
-      {/* Quick amount dugmad */}
+      {/* ============ BRZA DUGMAD ZA IZNOSE ============ */}
       <View style={styles.quickAmounts}>
         {['10', '25', '50', '100'].map((quickAmount) => (
           <TouchableOpacity
@@ -116,7 +159,7 @@ const SendModal = ({ visible, onClose }) => {
         ))}
       </View>
 
-      {/* Polje za poruku */}
+      {/* ============ POLJE ZA PORUKU ============ */}
       <Text style={styles.label}>Message (Optional)</Text>
       <TextInput
         style={styles.messageInput}
@@ -124,10 +167,10 @@ const SendModal = ({ visible, onClose }) => {
         onChangeText={setMessage}
         placeholder="Add a note..."
         placeholderTextColor="#A0A0C0"
-        multiline
+        multiline  // Moze imati vise redova
       />
 
-      {/* Dugme za slanje */}
+      {/* ============ DUGME ZA SLANJE ============ */}
       <TouchableOpacity onPress={handleSend} activeOpacity={0.9}>
         <LinearGradient
           colors={['#8B5CF6', '#7C3AED']}
@@ -143,6 +186,10 @@ const SendModal = ({ visible, onClose }) => {
   );
 };
 
+
+// ============================================
+// STILOVI
+// ============================================
 const styles = StyleSheet.create({
   // Labela za sekcije
   label: {
@@ -152,11 +199,11 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     marginTop: 15,
   },
+  
   // Lista kontakata
   contactsList: {
     maxHeight: 100,
   },
-  // Pojedinacni kontakt
   contactItem: {
     alignItems: 'center',
     marginRight: 15,
@@ -165,27 +212,25 @@ const styles = StyleSheet.create({
     backgroundColor: '#2D2D5A',
     minWidth: 80,
   },
-  // Odabrani kontakt
   contactItemSelected: {
     backgroundColor: '#3D3D6B',
     borderWidth: 1,
     borderColor: '#8B5CF6',
   },
-  // Avatar kontakta
   contactAvatar: {
     width: 44,
     height: 44,
     borderRadius: 22,
     marginBottom: 6,
   },
-  // Ime kontakta
   contactName: {
     fontFamily: 'Poppins-Medium',
     fontSize: 11,
     color: '#FFFFFF',
     textAlign: 'center',
   },
-  // Kontejner za iznos
+  
+  // Polje za iznos
   amountContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -194,14 +239,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 5,
   },
-  // Simbol valute
   currencySymbol: {
     fontFamily: 'Poppins-Bold',
     fontSize: 28,
     color: '#FFFFFF',
     marginRight: 5,
   },
-  // Input za iznos
   amountInput: {
     flex: 1,
     fontFamily: 'Poppins-Bold',
@@ -209,13 +252,13 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     paddingVertical: 10,
   },
-  // Kontejner za quick amounts
+  
+  // Brza dugmad
   quickAmounts: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 15,
   },
-  // Quick amount dugme
   quickAmountButton: {
     flex: 1,
     backgroundColor: '#2D2D5A',
@@ -224,13 +267,13 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
     alignItems: 'center',
   },
-  // Tekst quick amount
   quickAmountText: {
     fontFamily: 'Poppins-SemiBold',
     fontSize: 14,
     color: '#FFFFFF',
   },
-  // Input za poruku
+  
+  // Polje za poruku
   messageInput: {
     backgroundColor: '#2D2D5A',
     borderRadius: 12,
@@ -239,8 +282,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#FFFFFF',
     minHeight: 60,
-    textAlignVertical: 'top',
+    textAlignVertical: 'top',  // Tekst pocinje od vrha
   },
+  
   // Dugme za slanje
   sendButton: {
     flexDirection: 'row',
@@ -250,7 +294,6 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     marginTop: 25,
   },
-  // Tekst dugmeta
   sendButtonText: {
     fontFamily: 'Poppins-SemiBold',
     fontSize: 16,
