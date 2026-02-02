@@ -79,7 +79,10 @@ const StatisticsBar = ({ day, amount, maxAmount, isSelected = false, onPress }) 
     }
     return '$' + amt;
   };
-
+// amt - amount
+// ≥ 1000 --> dijeli sa 1000 i dodaje k
+// < 1000 --> samo prikaže broj
+// sve se formatira kao tekst za prikaz
 
   // ============================================
   // CRTAM KOMPONENTU
