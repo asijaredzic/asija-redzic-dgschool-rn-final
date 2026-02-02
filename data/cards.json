@@ -3,7 +3,7 @@
     "id": "1",
     "cardNumber": "9565",
     "balance": 5654.23,
-    "cardHolder": "Siyam Ali",
+    "cardHolder": "Redžić Asija",
     "expiryDate": "12/28",
     "cardType": "visa",
     "color": "#1A1A2E"
@@ -12,7 +12,7 @@
     "id": "2",
     "cardNumber": "4521",
     "balance": 2340.50,
-    "cardHolder": "Siyam Ali",
+    "cardHolder": "Redžić Muameri",
     "expiryDate": "08/27",
     "cardType": "mastercard",
     "color": "#16213E"

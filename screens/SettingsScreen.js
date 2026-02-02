@@ -1,38 +1,53 @@
-// SettingsScreen.js - Ekran za postavke aplikacije
-// Prikazuje korisnicke informacije, toggle opcije i logout
-// Ima lijepe animacije i organizovane sekcije
+// ============================================
+// SETTINGSSCREEN.JS - EKRAN SA POSTAVKAMA
+// ============================================
+// Ovdje korisnik moze:
+// - Vidjeti svoje informacije
+// - Ukljuciti/iskljuciti razne opcije (notifikacije, dark mode, itd.)
+// - Odjaviti se iz aplikacije
 
 import React, { useState, useRef, useEffect } from 'react';
+
 import { 
   View, 
   Text, 
   StyleSheet, 
   ScrollView, 
   TouchableOpacity,
-  Switch,
+  Switch,       // Prekidac za ukljuci/iskljuci
   StatusBar,
   Animated,
   Alert
 } from 'react-native';
+
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
-// Uvoz hook-a za autentifikaciju
+// Uzimam podatke o korisniku i funkciju za odjavu
 import { useAuth } from '../context/AuthContext';
+
 
 const SettingsScreen = () => {
   
-  // Dohvatamo korisnika i logout funkciju iz AuthContext-a
+  // Uzimam korisnika i logout funkciju
   const { user, logout } = useAuth();
   
-  // State za toggle opcije
-  const [notifications, setNotifications] = useState(true);
-  const [faceId, setFaceId] = useState(false);
-  const [darkMode, setDarkMode] = useState(true);
-  const [biometricPayment, setBiometricPayment] = useState(true);
-  const [transactionAlerts, setTransactionAlerts] = useState(true);
   
-  // Animacije
+  // ============================================
+  // STATE VARIJABLE ZA PREKIDACE
+  // ============================================
+  // Svaki prekidac ima svoju varijablu koja pamti da li je ukljucen (true) ili iskljucen (false)
+  
+  const [notifications, setNotifications] = useState(true);       // Notifikacije
+  const [faceId, setFaceId] = useState(false);                   // Face ID prijava
+  const [darkMode, setDarkMode] = useState(true);                 // Tamni mod
+  const [biometricPayment, setBiometricPayment] = useState(true); // Biometricko placanje
+  const [transactionAlerts, setTransactionAlerts] = useState(true); // Upozorenja za transakcije
+  
+  
+  // ============================================
+  // ANIMACIJA
+  // ============================================
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -43,60 +58,88 @@ const SettingsScreen = () => {
     }).start();
   }, []);
 
-  // Funkcija za logout sa potvrdom
+
+  // ============================================
+  // FUNKCIJA ZA ODJAVU
+  // ============================================
+  // Kada korisnik klikne "Log Out", pitam ga da potvrdi
   const handleLogout = () => {
     Alert.alert(
       'Odjava',
       'Da li ste sigurni da zelite da se odjavite?',
       [
-        { text: 'Odustani', style: 'cancel' },
+        { text: 'Odustani', style: 'cancel' },  // Dugme za odustajanje
         { 
           text: 'Odjavi se', 
-          style: 'destructive',
-          onPress: () => logout()
+          style: 'destructive',  // Crveno dugme
+          onPress: () => logout()  // Pozivam logout funkciju
         }
       ]
     );
   };
 
-  // Komponenta za jednu opciju u settings-u
+
+  // ============================================
+  // POMOCNA KOMPONENTA: SETTINGS ITEM
+  // ============================================
+  // Ovo je jedan red u postavkama sa ikonom, tekstom i strelicom
+  // Koristim ga za stavke kao "Personal Information", "Security", itd.
   const SettingsItem = ({ icon, iconColor, title, subtitle, onPress, rightElement }) => (
     <TouchableOpacity 
       style={styles.settingsItem}
       onPress={onPress}
-      activeOpacity={onPress ? 0.7 : 1}
+      activeOpacity={onPress ? 0.7 : 1}  // Ako ima onPress, reaguje na klik
     >
+      {/* Ikona u krugu */}
       <View style={[styles.settingsIconContainer, { backgroundColor: iconColor + '20' }]}>
         <Ionicons name={icon} size={20} color={iconColor} />
       </View>
+      
+      {/* Tekst */}
       <View style={styles.settingsContent}>
         <Text style={styles.settingsTitle}>{title}</Text>
         {subtitle && <Text style={styles.settingsSubtitle}>{subtitle}</Text>}
       </View>
+      
+      {/* Desni element - strelica ili nesto drugo */}
       {rightElement || (
         <Ionicons name="chevron-forward" size={20} color="#A0A0C0" />
       )}
     </TouchableOpacity>
   );
 
-  // Komponenta za toggle opciju
+
+  // ============================================
+  // POMOCNA KOMPONENTA: SETTINGS TOGGLE
+  // ============================================
+  // Ovo je red sa prekidacem (Switch)
+  // Koristim ga za opcije koje se ukljucuju/iskljucuju
   const SettingsToggle = ({ icon, iconColor, title, value, onValueChange }) => (
     <View style={styles.settingsItem}>
+      {/* Ikona */}
       <View style={[styles.settingsIconContainer, { backgroundColor: iconColor + '20' }]}>
         <Ionicons name={icon} size={20} color={iconColor} />
       </View>
+      
+      {/* Tekst */}
       <View style={styles.settingsContent}>
         <Text style={styles.settingsTitle}>{title}</Text>
       </View>
+      
+      {/* Prekidac */}
       <Switch
         value={value}
         onValueChange={onValueChange}
-        trackColor={{ false: '#3D3D6B', true: '#8B5CF6' }}
-        thumbColor={value ? '#FFFFFF' : '#A0A0C0'}
+        trackColor={{ false: '#3D3D6B', true: '#8B5CF6' }}  // Boja trake
+        thumbColor={value ? '#FFFFFF' : '#A0A0C0'}          // Boja kuglice
       />
     </View>
   );
 
+
+  // ============================================
+  // CRTAM EKRAN
+  // ============================================
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#0F0F1E" />
@@ -104,26 +147,33 @@ const SettingsScreen = () => {
       <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
         <ScrollView showsVerticalScrollIndicator={false}>
           
-          {/* ZAGLAVLJE */}
+          {/* ============ NASLOV ============ */}
           <Text style={styles.headerTitle}>Settings</Text>
 
-          {/* KORISNICKE INFORMACIJE */}
+
+          {/* ============ KORISNICKE INFORMACIJE ============ */}
           <View style={styles.userSection}>
+            {/* Avatar - krug sa prvim slovom imena */}
             <View style={styles.userAvatar}>
               <Text style={styles.userInitial}>
                 {user?.name?.charAt(0) || 'S'}
               </Text>
             </View>
+            
+            {/* Ime i email */}
             <View style={styles.userInfo}>
               <Text style={styles.userName}>{user?.name || 'Student'}</Text>
               <Text style={styles.userEmail}>{user?.email || 'student@email.com'}</Text>
             </View>
+            
+            {/* Dugme za uredjivanje */}
             <TouchableOpacity style={styles.editButton}>
               <Ionicons name="pencil" size={18} color="#8B5CF6" />
             </TouchableOpacity>
           </View>
 
-          {/* SEKCIJA - RACUN */}
+
+          {/* ============ SEKCIJA: RACUN ============ */}
           <Text style={styles.sectionTitle}>Account</Text>
           <View style={styles.settingsSection}>
             <SettingsItem 
@@ -146,7 +196,8 @@ const SettingsScreen = () => {
             />
           </View>
 
-          {/* SEKCIJA - PREFERENCIJE */}
+
+          {/* ============ SEKCIJA: PREFERENCIJE ============ */}
           <Text style={styles.sectionTitle}>Preferences</Text>
           <View style={styles.settingsSection}>
             <SettingsToggle 
@@ -186,7 +237,8 @@ const SettingsScreen = () => {
             />
           </View>
 
-          {/* SEKCIJA - PODRSKA */}
+
+          {/* ============ SEKCIJA: PODRSKA ============ */}
           <Text style={styles.sectionTitle}>Support</Text>
           <View style={styles.settingsSection}>
             <SettingsItem 
@@ -209,7 +261,8 @@ const SettingsScreen = () => {
             />
           </View>
 
-          {/* LOGOUT DUGME */}
+
+          {/* ============ DUGME ZA ODJAVU ============ */}
           <TouchableOpacity 
             style={styles.logoutButton}
             onPress={handleLogout}
@@ -218,7 +271,8 @@ const SettingsScreen = () => {
             <Text style={styles.logoutText}>Log Out</Text>
           </TouchableOpacity>
 
-          {/* VERZIJA APLIKACIJE */}
+
+          {/* ============ VERZIJA APLIKACIJE ============ */}
           <Text style={styles.versionText}>Student Finance App v1.0.0</Text>
 
           {/* Prazan prostor za tab bar */}
@@ -229,6 +283,10 @@ const SettingsScreen = () => {
   );
 };
 
+
+// ============================================
+// STILOVI
+// ============================================
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -238,7 +296,8 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
   },
-  // Zaglavlje
+  
+  // Naslov
   headerTitle: {
     fontFamily: 'Poppins-Bold',
     fontSize: 28,
@@ -246,6 +305,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 25,
   },
+  
   // Korisnicka sekcija
   userSection: {
     flexDirection: 'row',
@@ -291,7 +351,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  // Sekcije
+  
+  // Naslovi sekcija
   sectionTitle: {
     fontFamily: 'Poppins-SemiBold',
     fontSize: 14,
@@ -300,13 +361,16 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
+  
+  // Kontejner za sekciju
   settingsSection: {
     backgroundColor: '#1E1E3A',
     borderRadius: 16,
     marginBottom: 25,
     overflow: 'hidden',
   },
-  // Settings item
+  
+  // Jedan item u postavkama
   settingsItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -336,12 +400,13 @@ const styles = StyleSheet.create({
     color: '#A0A0C0',
     marginTop: 2,
   },
-  // Logout dugme
+  
+  // Dugme za odjavu
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#EF444420',
+    backgroundColor: '#EF444420',  // Crvenkasta pozadina
     borderRadius: 16,
     paddingVertical: 16,
     marginBottom: 20,
@@ -352,7 +417,8 @@ const styles = StyleSheet.create({
     color: '#EF4444',
     marginLeft: 10,
   },
-  // Verzija
+  
+  // Verzija aplikacije
   versionText: {
     fontFamily: 'Poppins-Regular',
     fontSize: 12,

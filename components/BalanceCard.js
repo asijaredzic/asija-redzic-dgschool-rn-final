@@ -1,47 +1,62 @@
-// BalanceCard.js - Komponenta za prikaz ukupnog balansa
-// Prikazuje glavni balans korisnika sa prihodima i rashodima
-// Koristi LinearGradient za lijepu pozadinu
+// ============================================
+// BALANCECARD.JS - KARTICA SA BALANSOM
+// ============================================
+// Ova komponenta prikazuje koliko novca imam.
+// Pokazuje:
+// - Ukupni balans (Total Balance)
+// - Koliko sam zaradila (Income)
+// - Koliko sam potrosila (Outcome)
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
-// Komponenta prima balance, income i outcome kao props
-// Props su kao "argumenti" koje saljemo komponenti kada je koristimo
+
+// Komponenta prima tri "propsa" (podatka):
+// - balance: ukupno novca
+// - income: prihodi
+// - outcome: rashodi
 const BalanceCard = ({ balance, income, outcome }) => {
   
-  // Funkcija za formatiranje novca (dodaje $ i zareze)
-  // Npr: 17298.92 postaje "$17,298.92"
+  // ============================================
+  // FUNKCIJA ZA FORMATIRANJE NOVCA
+  // ============================================
+  // Pretvaram broj u lijepi format sa dolarskim znakom
+  // Na primjer: 17298.92 postaje "$17,298.92"
   const formatMoney = (amount) => {
     return '$' + amount.toLocaleString('en-US', {
-      minimumFractionDigits: 2,
+      minimumFractionDigits: 2,  // Uvijek 2 decimale
       maximumFractionDigits: 2
     });
   };
 
+
+  // ============================================
+  // CRTAM KOMPONENTU
+  // ============================================
   return (
-    // LinearGradient pravi lijepi prelaz boja u pozadini
+    // LinearGradient pravi lijepi preliv boja (od ljubicaste do tamnije)
     <LinearGradient
       colors={['#2D2D5A', '#1E1E3A']}
       style={styles.container}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
+      start={{ x: 0, y: 0 }}   // Pocinje gore lijevo
+      end={{ x: 1, y: 1 }}     // Zavrsava dolje desno
     >
       {/* Naslov "Total Balance" */}
       <Text style={styles.label}>Total Balance</Text>
       
-      {/* Glavni iznos balansa - najveci tekst */}
+      {/* Glavni iznos - ovo je najveci tekst na kartici */}
       <Text style={styles.balance}>{formatMoney(balance)}</Text>
       
       {/* Red sa prihodima i rashodima */}
       <View style={styles.statsRow}>
-        {/* Lijeva strana - prihodi (Income) */}
+        {/* Lijeva strana - prihodi */}
         <View style={styles.statItem}>
           <Text style={styles.statLabel}>Income</Text>
           <Text style={styles.statValue}>{formatMoney(income)}</Text>
         </View>
         
-        {/* Desna strana - rashodi (Outcome) */}
+        {/* Desna strana - rashodi */}
         <View style={styles.statItem}>
           <Text style={styles.statLabel}>Outcome</Text>
           <Text style={styles.statValue}>{formatMoney(outcome)}</Text>
@@ -51,45 +66,54 @@ const BalanceCard = ({ balance, income, outcome }) => {
   );
 };
 
-// Stilovi za komponentu
+
+// ============================================
+// STILOVI
+// ============================================
 const styles = StyleSheet.create({
-  // Glavni kontejner sa zaobljenim uglovima
+  // Glavni kontejner kartice
   container: {
-    borderRadius: 20,
-    padding: 20,
-    marginBottom: 20,
+    borderRadius: 20,    // Zaobljeni uglovi
+    padding: 20,         // Razmak unutar kartice
+    marginBottom: 20,    // Razmak ispod kartice
   },
-  // Stil za "Total Balance" tekst
+  
+  // Tekst "Total Balance"
   label: {
     fontFamily: 'Poppins-Regular',
     fontSize: 14,
-    color: '#A0A0C0',
+    color: '#A0A0C0',    // Siva boja
     marginBottom: 5,
   },
-  // Stil za glavni iznos - veliki i boldovan
+  
+  // Glavni iznos - veliki i debeli
   balance: {
     fontFamily: 'Poppins-Bold',
     fontSize: 36,
-    color: '#FFFFFF',
+    color: '#FFFFFF',    // Bijela boja
     marginBottom: 15,
   },
-  // Red koji drzi Income i Outcome
+  
+  // Red sa Income i Outcome
   statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: 'row',           // Poredaj horizontalno
+    justifyContent: 'space-between', // Rasporedi sa razmakom
   },
-  // Pojedinacni stat item
+  
+  // Jedan stat (Income ili Outcome)
   statItem: {
-    flex: 1,
+    flex: 1,  // Zauzmi jednak prostor
   },
-  // Labela za stat (Income/Outcome)
+  
+  // Labela (Income/Outcome)
   statLabel: {
     fontFamily: 'Poppins-Regular',
     fontSize: 12,
     color: '#A0A0C0',
     marginBottom: 2,
   },
-  // Vrijednost stata
+  
+  // Vrijednost
   statValue: {
     fontFamily: 'Poppins-SemiBold',
     fontSize: 16,

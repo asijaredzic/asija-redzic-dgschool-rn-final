@@ -1,8 +1,16 @@
-// ContactItem.js - Komponenta za prikaz kontakta za brzi transfer
-// Prikazuje avatar i ime kontakta
-// Animirana sa scale efektom pri pritisku
+// ============================================
+// CONTACTITEM.JS - PRIKAZ JEDNOG KONTAKTA
+// ============================================
+// Ova komponenta prikazuje jedan kontakt u horizontalnoj listi.
+// Koristi se za brzi transfer novca prijateljima.
+// Prikazuje:
+// - Sliku (avatar) kontakta
+// - Ime kontakta
+// 
+// Moze biti i dugme za dodavanje novog kontakta (sa + ikonom).
 
 import React, { useRef } from 'react';
+
 import { 
   View, 
   Text, 
@@ -11,17 +19,26 @@ import {
   Animated,
   Image 
 } from 'react-native';
+
 import { Ionicons } from '@expo/vector-icons';
 
-// Props: contact (podaci o kontaktu), onPress (funkcija za klik), isAddButton (da li je dugme za dodavanje)
+
+// Komponenta prima:
+// - contact: objekt sa podacima o kontaktu
+// - onPress: funkcija za klik
+// - isAddButton: ako je true, prikazujem dugme za dodavanje
 const ContactItem = ({ contact, onPress, isAddButton = false }) => {
   
   // Animacija za scale efekat
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
+
+  // ============================================
+  // ANIMACIJE ZA PRITISAK
+  // ============================================
   const handlePressIn = () => {
     Animated.spring(scaleAnim, {
-      toValue: 0.9,
+      toValue: 0.9,  // Smanji vise nego transakcija
       useNativeDriver: true,
     }).start();
   };
@@ -34,7 +51,11 @@ const ContactItem = ({ contact, onPress, isAddButton = false }) => {
     }).start();
   };
 
-  // Ako je ovo dugme za dodavanje novog kontakta
+
+  // ============================================
+  // AKO JE DUGME ZA DODAVANJE
+  // ============================================
+  // Prikazujem krug sa + ikonom umjesto kontakta
   if (isAddButton) {
     return (
       <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
@@ -45,7 +66,7 @@ const ContactItem = ({ contact, onPress, isAddButton = false }) => {
           activeOpacity={0.9}
           style={styles.container}
         >
-          {/* Krug sa + ikonom */}
+          {/* Krug sa isprekidanom linijom i + ikonom */}
           <View style={styles.addButton}>
             <Ionicons name="add" size={28} color="#8B5CF6" />
           </View>
@@ -54,7 +75,10 @@ const ContactItem = ({ contact, onPress, isAddButton = false }) => {
     );
   }
 
-  // Normalni kontakt item
+
+  // ============================================
+  // NORMALNI KONTAKT
+  // ============================================
   return (
     <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
       <TouchableOpacity
@@ -64,12 +88,14 @@ const ContactItem = ({ contact, onPress, isAddButton = false }) => {
         activeOpacity={0.9}
         style={styles.container}
       >
-        {/* Avatar kontakta */}
+        {/* Slika kontakta */}
         <Image 
           source={{ uri: contact.avatar }} 
           style={styles.avatar}
         />
-        {/* Ime kontakta (samo prvo ime) */}
+        
+        {/* Ime kontakta - samo prvo ime */}
+        {/* split(' ')[0] uzima samo prvi dio imena */}
         <Text style={styles.name} numberOfLines={1}>
           {contact.name.split(' ')[0]}
         </Text>
@@ -78,32 +104,39 @@ const ContactItem = ({ contact, onPress, isAddButton = false }) => {
   );
 };
 
+
+// ============================================
+// STILOVI
+// ============================================
 const styles = StyleSheet.create({
-  // Glavni kontejner
+  // Glavni kontejner - mali i centriran
   container: {
     alignItems: 'center',
-    marginRight: 16,
-    width: 60,
+    marginRight: 16,  // Razmak izmedju kontakata
+    width: 60,        // Fiksna sirina
   },
-  // Dugme za dodavanje
+  
+  // Dugme za dodavanje - isprekidana linija
   addButton: {
     width: 52,
     height: 52,
-    borderRadius: 26,
+    borderRadius: 26,         // Krug
     borderWidth: 2,
-    borderColor: '#8B5CF6',
-    borderStyle: 'dashed',
+    borderColor: '#8B5CF6',   // Ljubicasta boja
+    borderStyle: 'dashed',    // Isprekidana linija
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 6,
   },
-  // Avatar slika
+  
+  // Slika kontakta - krug
   avatar: {
     width: 52,
     height: 52,
     borderRadius: 26,
     marginBottom: 6,
   },
+  
   // Ime kontakta
   name: {
     fontFamily: 'Poppins-Medium',

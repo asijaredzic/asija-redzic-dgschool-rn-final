@@ -1,6 +1,10 @@
-// TransactionDetailModal.js - Modal za detalje transakcije
-// Prikazuje sve informacije o odabranoj transakciji
-// Otvara se kada korisnik klikne na neku transakciju
+// ============================================================
+// TRANSACTION DETAIL MODAL - Prozor sa detaljima transakcije
+// ============================================================
+// Ja sam napravio ovaj prozor da pokazuje sve informacije
+// o jednoj transakciji kad korisnik klikne na nju.
+// Pokazuje: ime, iznos, datum, kategoriju, status, itd.
+// ============================================================
 
 import React from 'react';
 import { 
@@ -12,51 +16,64 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import BaseModal from './BaseModal';
 
-// Props: visible, onClose, transaction (podaci o transakciji)
+// Komponenta prima tri stvari:
+// visible = da li je prozor vidljiv
+// onClose = funkcija za zatvaranje
+// transaction = podaci o transakciji koju prikazujemo
 const TransactionDetailModal = ({ visible, onClose, transaction }) => {
   
-  // Ako nema transakcije, ne prikazuj nista
+  // Ako nema transakcije, ne prikazujem nista
+  // Ovo je zastita da se aplikacija ne srusi
   if (!transaction) return null;
 
-  // Funkcija za formatiranje novca
+  // ========== POMOCNE FUNKCIJE ==========
+  
+  // Ova funkcija formatira novac lijepo
+  // Na primjer: -50 postaje "-$50.00", a 100 postaje "+$100.00"
   const formatMoney = (amount) => {
-    const isNegative = amount < 0;
+    const isNegative = amount < 0;  // Da li je negativan broj?
+    
+    // Pravim lijepi format sa zarezima i decimalama
     const formatted = Math.abs(amount).toLocaleString('en-US', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     });
+    
+    // Dodajem minus ili plus ispred
     return isNegative ? `-$${formatted}` : `+$${formatted}`;
   };
 
-  // Funkcija za odabir ikone kategorije
+  // Ova funkcija vraca ikonu za svaku kategoriju
+  // Svaka kategorija ima svoju ikonu da je lakse prepoznati
   const getCategoryIcon = (category) => {
     switch (category) {
-      case 'subscription': return 'logo-dribbble';
-      case 'transfer': return 'swap-horizontal';
-      case 'food': return 'fast-food';
-      case 'shopping': return 'cart';
-      case 'transport': return 'car';
-      case 'salary': return 'wallet';
-      case 'freelance': return 'laptop';
-      default: return 'cash';
+      case 'subscription': return 'logo-dribbble';    // Pretplate
+      case 'transfer': return 'swap-horizontal';       // Transferi
+      case 'food': return 'fast-food';                 // Hrana
+      case 'shopping': return 'cart';                  // Kupovina
+      case 'transport': return 'car';                  // Prevoz
+      case 'salary': return 'wallet';                  // Plata
+      case 'freelance': return 'laptop';               // Freelance posao
+      default: return 'cash';                          // Sve ostalo
     }
   };
 
-  // Funkcija za odabir boje kategorije
+  // Ova funkcija vraca boju za svaku kategoriju
+  // Svaka kategorija ima svoju boju da je lakse prepoznati
   const getCategoryColor = (category) => {
     switch (category) {
-      case 'subscription': return '#EC4899';
-      case 'transfer': return '#8B5CF6';
-      case 'food': return '#F59E0B';
-      case 'shopping': return '#3B82F6';
-      case 'transport': return '#10B981';
-      case 'salary': return '#10B981';
-      case 'freelance': return '#6366F1';
-      default: return '#6B7280';
+      case 'subscription': return '#EC4899';  // Roza
+      case 'transfer': return '#8B5CF6';      // Ljubicasta
+      case 'food': return '#F59E0B';          // Narandzasta
+      case 'shopping': return '#3B82F6';      // Plava
+      case 'transport': return '#10B981';     // Zelena
+      case 'salary': return '#10B981';        // Zelena
+      case 'freelance': return '#6366F1';     // Indigo
+      default: return '#6B7280';              // Siva
     }
   };
 
-  // Funkcija za ime kategorije
+  // Ova funkcija vraca imena kategorija
   const getCategoryName = (category) => {
     switch (category) {
       case 'subscription': return 'Pretplata';
@@ -70,17 +87,25 @@ const TransactionDetailModal = ({ visible, onClose, transaction }) => {
     }
   };
 
+  // Da li je ovo trosak (negativan iznos)?
   const isExpense = transaction.amount < 0;
 
+  // ========== RENDEROVANJE ==========
   return (
     <BaseModal visible={visible} onClose={onClose} title="Transaction Details">
-      {/* Gornji dio sa ikonom/slikom */}
+      
+      {/* ========== ZAGLAVLJE ========== */}
       <View style={styles.header}>
+        
+        {/* Slika ili ikona transakcije */}
         {transaction.image ? (
+          // Ako ima sliku, pokazujem sliku
           <Image source={{ uri: transaction.image }} style={styles.headerImage} />
         ) : (
+          // Ako nema sliku, pokazujem ikonu kategorije
           <View style={[
             styles.headerIcon,
+            // Boja pozadine je boja kategorije + prozirnost
             { backgroundColor: getCategoryColor(transaction.category) + '20' }
           ]}>
             <Ionicons 
@@ -90,7 +115,11 @@ const TransactionDetailModal = ({ visible, onClose, transaction }) => {
             />
           </View>
         )}
+        
+        {/* Ime transakcije */}
         <Text style={styles.transactionName}>{transaction.name}</Text>
+        
+        {/* Iznos - crveno ako je trosak, zeleno ako je dobitak */}
         <Text style={[
           styles.transactionAmount,
           { color: isExpense ? '#EF4444' : '#10B981' }
@@ -99,9 +128,10 @@ const TransactionDetailModal = ({ visible, onClose, transaction }) => {
         </Text>
       </View>
 
-      {/* Detalji transakcije */}
+      {/* ========== DETALJI ========== */}
       <View style={styles.detailsContainer}>
-        {/* Status */}
+        
+        {/* STATUS */}
         <View style={styles.detailRow}>
           <Text style={styles.detailLabel}>Status</Text>
           <View style={styles.statusBadge}>
@@ -110,13 +140,13 @@ const TransactionDetailModal = ({ visible, onClose, transaction }) => {
           </View>
         </View>
 
-        {/* Datum */}
+        {/* DATUM */}
         <View style={styles.detailRow}>
           <Text style={styles.detailLabel}>Datum</Text>
           <Text style={styles.detailValue}>{transaction.date}</Text>
         </View>
 
-        {/* Kategorija */}
+        {/* KATEGORIJA */}
         <View style={styles.detailRow}>
           <Text style={styles.detailLabel}>Kategorija</Text>
           <View style={styles.categoryBadge}>
@@ -134,7 +164,7 @@ const TransactionDetailModal = ({ visible, onClose, transaction }) => {
           </View>
         </View>
 
-        {/* Tip transakcije */}
+        {/* TIP - rashod ili prihod */}
         <View style={styles.detailRow}>
           <Text style={styles.detailLabel}>Tip</Text>
           <Text style={styles.detailValue}>
@@ -142,7 +172,7 @@ const TransactionDetailModal = ({ visible, onClose, transaction }) => {
           </Text>
         </View>
 
-        {/* ID transakcije */}
+        {/* ID TRANSAKCIJE - svaka transakcija ima jedinstveni broj */}
         <View style={styles.detailRow}>
           <Text style={styles.detailLabel}>ID Transakcije</Text>
           <Text style={styles.detailValueSmall}>
@@ -151,7 +181,7 @@ const TransactionDetailModal = ({ visible, onClose, transaction }) => {
         </View>
       </View>
 
-      {/* Napomena na dnu */}
+      {/* ========== NAPOMENA ========== */}
       <View style={styles.noteContainer}>
         <Ionicons name="information-circle" size={16} color="#A0A0C0" />
         <Text style={styles.noteText}>
@@ -162,8 +192,11 @@ const TransactionDetailModal = ({ visible, onClose, transaction }) => {
   );
 };
 
+// ============================================================
+// STILOVI
+// ============================================================
 const styles = StyleSheet.create({
-  // Zaglavlje
+  // ----- ZAGLAVLJE -----
   header: {
     alignItems: 'center',
     marginBottom: 25,
@@ -171,7 +204,7 @@ const styles = StyleSheet.create({
   headerImage: {
     width: 80,
     height: 80,
-    borderRadius: 40,
+    borderRadius: 40,            // Krug
     marginBottom: 15,
   },
   headerIcon: {
@@ -192,7 +225,8 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins-Bold',
     fontSize: 32,
   },
-  // Detalji
+  
+  // ----- DETALJI -----
   detailsContainer: {
     backgroundColor: '#2D2D5A',
     borderRadius: 16,
@@ -222,11 +256,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#FFFFFF',
   },
-  // Status badge
+  
+  // ----- STATUS BADGE -----
   statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#10B98120',
+    backgroundColor: '#10B98120',  // Zelena sa prozirnošcu
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
@@ -234,7 +269,7 @@ const styles = StyleSheet.create({
   statusDot: {
     width: 6,
     height: 6,
-    borderRadius: 3,
+    borderRadius: 3,               // Mala tacka
     backgroundColor: '#10B981',
     marginRight: 6,
   },
@@ -243,7 +278,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#10B981',
   },
-  // Category badge
+  
+  // ----- KATEGORIJA BADGE -----
   categoryBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -253,7 +289,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginLeft: 6,
   },
-  // Napomena
+  
+  // ----- NAPOMENA -----
   noteContainer: {
     flexDirection: 'row',
     alignItems: 'flex-start',

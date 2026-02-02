@@ -1,8 +1,17 @@
-// TransactionItem.js - Komponenta za prikaz jedne transakcije
-// Prikazuje ime, datum, ikonu i iznos transakcije
-// Animirana komponenta koja reaguje na pritisak
+// ============================================
+// TRANSACTIONITEM.JS - PRIKAZ JEDNE TRANSAKCIJE
+// ============================================
+// Ova komponenta prikazuje jednu transakciju u listi.
+// Prikazuje:
+// - Ikonu kategorije (ili sliku)
+// - Ime transakcije
+// - Datum
+// - Iznos (zeleno za prihod, crveno za rashod)
+// 
+// Ima animaciju kada je pritisnem.
 
 import React, { useRef } from 'react';
+
 import { 
   View, 
   Text, 
@@ -11,91 +20,121 @@ import {
   Animated,
   Image 
 } from 'react-native';
+
 import { Ionicons } from '@expo/vector-icons';
 
-// Props: transaction (podaci o transakciji), onPress (funkcija za klik)
+
+// Komponenta prima:
+// - transaction: objekt sa podacima o transakciji
+// - onPress: funkcija koja se poziva kada kliknem
 const TransactionItem = ({ transaction, onPress }) => {
   
-  // Animacija za scale efekat pri pritisku
+  // Animacija za scale efekat
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
-  // Funkcija za formatiranje novca
-  // Ako je negativan iznos (trosak), prikazuje crveno
-  // Ako je pozitivan (prihod), prikazuje zeleno sa + ispred
+
+  // ============================================
+  // FUNKCIJA ZA FORMATIRANJE NOVCA
+  // ============================================
+  // Ako je negativan iznos (trosak), stavlja minus
+  // Ako je pozitivan (prihod), stavlja plus
   const formatAmount = (amount) => {
     const isNegative = amount < 0;
+    
+    // Math.abs pretvara negativan broj u pozitivan
     const formatted = Math.abs(amount).toLocaleString('en-US', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     });
+    
+    // Vracam formatiran iznos sa + ili -
     return isNegative ? `-$${formatted}` : `+$${formatted}`;
   };
 
-  // Odredjuje boju iznosa na osnovu tipa transakcije
+
+  // ============================================
+  // FUNKCIJA ZA BOJU IZNOSA
+  // ============================================
+  // Crvena za rashode, zelena za dobitke
   const getAmountColor = (amount) => {
-    return amount < 0 ? '#EF4444' : '#10B981'; // Crvena za minus, zelena za plus
+    return amount < 0 ? '#EF4444' : '#10B981';
   };
 
-  // Animacija pri pritisku
+
+  // ============================================
+  // ANIMACIJE ZA PRITISAK
+  // ============================================
   const handlePressIn = () => {
     Animated.spring(scaleAnim, {
-      toValue: 0.98,
+      toValue: 0.98,  // Malo smanji
       useNativeDriver: true,
     }).start();
   };
 
   const handlePressOut = () => {
     Animated.spring(scaleAnim, {
-      toValue: 1,
+      toValue: 1,     // Vrati na normalnu velicinu
       friction: 3,
       useNativeDriver: true,
     }).start();
   };
 
-  // Funkcija za odabir ikone na osnovu kategorije
+
+  // ============================================
+  // FUNKCIJA ZA ODABIR IKONE
+  // ============================================
+  // Za svaku kategoriju biram drugu ikonu
   const getCategoryIcon = (category) => {
     switch (category) {
       case 'subscription':
-        return 'logo-dribbble';
+        return 'logo-dribbble';  // Pretplate
       case 'transfer':
-        return 'swap-horizontal';
+        return 'swap-horizontal'; // Transferi
       case 'food':
-        return 'fast-food';
+        return 'fast-food';       // Hrana
       case 'shopping':
-        return 'cart';
+        return 'cart';            // Kupovina
       case 'transport':
-        return 'car';
+        return 'car';             // Prevoz
       case 'salary':
-        return 'wallet';
+        return 'wallet';          // Plata
       case 'freelance':
-        return 'laptop';
+        return 'laptop';          // Freelance posao
       default:
-        return 'cash';
+        return 'cash';            // Ostalo
     }
   };
 
-  // Funkcija za odabir boje ikone na osnovu kategorije
+
+  // ============================================
+  // FUNKCIJA ZA BOJU IKONE
+  // ============================================
+  // Za svaku kategoriju biram drugu boju
   const getCategoryColor = (category) => {
     switch (category) {
       case 'subscription':
-        return '#EC4899'; // Pink
+        return '#EC4899'; // Roza
       case 'transfer':
-        return '#8B5CF6'; // Purple
+        return '#8B5CF6'; // Ljubicasta
       case 'food':
-        return '#F59E0B'; // Orange
+        return '#F59E0B'; // Narandzasta
       case 'shopping':
-        return '#3B82F6'; // Blue
+        return '#3B82F6'; // Plava
       case 'transport':
-        return '#10B981'; // Green
+        return '#10B981'; // Zelena
       case 'salary':
-        return '#10B981'; // Green
+        return '#10B981'; // Zelena
       case 'freelance':
         return '#6366F1'; // Indigo
       default:
-        return '#6B7280'; // Gray
+        return '#6B7280'; // Siva
     }
   };
 
+
+  // ============================================
+  // CRTANJE KOMPONENTE KOMPONENTU
+  // ============================================
   return (
     <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
       <TouchableOpacity
@@ -105,16 +144,16 @@ const TransactionItem = ({ transaction, onPress }) => {
         activeOpacity={0.9}
         style={styles.container}
       >
-        {/* Lijeva strana - ikona ili slika */}
+        {/* ============ LIJEVA STRANA - IKONA ============ */}
         <View style={[
           styles.iconContainer, 
           { backgroundColor: getCategoryColor(transaction.category) + '20' }
         ]}>
           {transaction.image ? (
-            // Ako transakcija ima sliku, prikazi je
+            // Ako transakcija ima sliku, prikazujem je
             <Image source={{ uri: transaction.image }} style={styles.image} />
           ) : (
-            // Inace prikazi ikonu kategorije
+            // Inace prikazujem ikonu kategorije
             <Ionicons 
               name={getCategoryIcon(transaction.category)} 
               size={24} 
@@ -123,14 +162,17 @@ const TransactionItem = ({ transaction, onPress }) => {
           )}
         </View>
 
-        {/* Sredina - ime i datum */}
+        {/* ============ SREDINA - IME I DATUM ============ */}
         <View style={styles.details}>
           <Text style={styles.name}>{transaction.name}</Text>
           <Text style={styles.date}>{transaction.date}</Text>
         </View>
 
-        {/* Desna strana - iznos */}
-        <Text style={[styles.amount, { color: getAmountColor(transaction.amount) }]}>
+        {/* ============ DESNA STRANA - IZNOS ============ */}
+        <Text style={[
+          styles.amount, 
+          { color: getAmountColor(transaction.amount) }
+        ]}>
           {formatAmount(transaction.amount)}
         </Text>
       </TouchableOpacity>
@@ -138,15 +180,20 @@ const TransactionItem = ({ transaction, onPress }) => {
   );
 };
 
+
+// ============================================
+// STILOVI
+// ============================================
 const styles = StyleSheet.create({
-  // Glavni kontejner - horizontalni layout
+  // Glavni kontejner - horizontalni raspored
   container: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 12,
     paddingHorizontal: 5,
   },
-  // Kontejner za ikonu
+  
+  // Kontejner za ikonu - krug
   iconContainer: {
     width: 48,
     height: 48,
@@ -155,16 +202,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 12,
   },
-  // Stil za sliku (ako postoji)
+  
+  // Slika (ako postoji)
   image: {
     width: 48,
     height: 48,
     borderRadius: 12,
   },
-  // Kontejner za detalje (ime i datum)
+  
+  // Detalji (ime i datum)
   details: {
-    flex: 1,
+    flex: 1,  // Zauzmi preostali prostor
   },
+  
   // Ime transakcije
   name: {
     fontFamily: 'Poppins-SemiBold',
@@ -172,13 +222,15 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     marginBottom: 2,
   },
-  // Datum transakcije
+  
+  // Datum
   date: {
     fontFamily: 'Poppins-Regular',
     fontSize: 12,
     color: '#A0A0C0',
   },
-  // Iznos transakcije
+  
+  // Iznos
   amount: {
     fontFamily: 'Poppins-Bold',
     fontSize: 16,

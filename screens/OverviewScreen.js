@@ -1,8 +1,15 @@
-// OverviewScreen.js - Ekran sa pregledom statistike
-// Prikazuje grafikon, karticu, i filtrirane transakcije
-// Dodano: search, monthly comparison, defensive data handling
+// ============================================
+// OVERVIEWSCREEN.JS - EKRAN SA STATISTIKOM
+// ============================================
+// Ovaj ekran prikazuje detaljniju statistiku o novcu.
+// Ima:
+// - Pretragu transakcija
+// - Grafikon potrosnje po danima
+// - Filter po kategorijama
+// - Sve transakcije
 
 import React, { useState, useEffect, useRef } from 'react';
+
 import {
   View,
   Text,
@@ -11,72 +18,102 @@ import {
   TouchableOpacity,
   StatusBar,
   Animated,
-  TextInput,
+  TextInput,      // Polje za pretragu
 } from 'react-native';
+
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
-// Komponente
+// Moje komponente
 import {
-  CreditCard,
-  StatisticsBar,
-  CategoryFilter,
-  SectionHeader,
-  TransactionItem,
-  TransactionDetailModal,
+  CreditCard,               // Kartica sa balansom
+  StatisticsBar,            // Stupac u grafikonu
+  CategoryFilter,           // Dugmad za filtriranje
+  SectionHeader,            // Naslov sekcije
+  TransactionItem,          // Jedna transakcija
+  TransactionDetailModal,   // Popup sa detaljima
 } from '../components';
 
-// Podaci
+// Ucitavam podatke
 import rawTransactions from '../data/transactions.json';
 import rawCards from '../data/cards.json';
 import rawCategories from '../data/categories.json';
 import rawBalanceHistory from '../data/balanceHistory.json';
 
-// Utils — date parsing for strings like "June 28"
+
+// ============================================
+// POMOCNE STVARI ZA RAD SA DATUMIMA
+// ============================================
+// Ovo mi pomaze da pretvorim tekst "June 28" u pravi datum
+
+// Lista mjeseci i njihovi brojevi (0-11)
 const MONTHS = {
-  January: 0,
-  February: 1,
-  March: 2,
-  April: 3,
-  May: 4,
-  June: 5,
-  July: 6,
-  August: 7,
-  September: 8,
-  October: 9,
-  November: 10,
-  December: 11,
+  January: 0, February: 1, March: 2, April: 3,
+  May: 4, June: 5, July: 6, August: 7,
+  September: 8, October: 9, November: 10, December: 11,
 };
 
+// Funkcija koja pretvara tekst u datum
+// Na primjer: "June 28" postaje Date objekt
 const parseTransactionDate = (dateString) => {
+  // Ako nema datuma ili nije tekst, vracam null
   if (!dateString || typeof dateString !== 'string') return null;
-  // expected formats: "June 28" or "Jun 28" or "June 28, 2025"
+  
+  // Cistim tekst - uklonim zareze i razmake
   const cleaned = dateString.replace(',', '').trim();
   const parts = cleaned.split(' ');
+  
+  // Trebam bar mjesec i dan
   if (parts.length < 2) return null;
-  const monthPart = parts[0];
-  const dayPart = parts[1];
-  const monthFull = Object.keys(MONTHS).find(m => m.toLowerCase().startsWith(monthPart.toLowerCase()));
+  
+  const monthPart = parts[0];  // "June"
+  const dayPart = parts[1];    // "28"
+  
+  // Trazim koji je to mjesec
+  const monthFull = Object.keys(MONTHS).find(
+    m => m.toLowerCase().startsWith(monthPart.toLowerCase())
+  );
   const monthIndex = typeof monthFull === 'string' ? MONTHS[monthFull] : undefined;
+  
   if (monthIndex === undefined) return null;
+  
+  // Pretavam dan u broj
   const day = parseInt(dayPart, 10);
   if (Number.isNaN(day)) return null;
-  // We don't have year in transactions.json — assume 2025 (matches your balanceHistory)
+  
+  // Vracam datum (koristim 2025 jer nemam godinu u podacima)
   return new Date(2025, monthIndex, day);
 };
 
-// =========================
-// Component
-// =========================
+
+// ============================================
+// GLAVNA KOMPONENTA
+// ============================================
 const OverviewScreen = ({ navigation }) => {
-  // STATE
+  
+  // ============================================
+  // STATE VARIJABLE
+  // ============================================
+  
+  // Koji dan je odabran u grafikonu
   const [selectedDay, setSelectedDay] = useState(null);
+  
+  // Koja kategorija je odabrana za filter
   const [selectedCategory, setSelectedCategory] = useState('all');
+  
+  // Da li je modal sa detaljima otvoren
   const [detailModalVisible, setDetailModalVisible] = useState(false);
+  
+  // Koja transakcija je odabrana
   const [selectedTransaction, setSelectedTransaction] = useState(null);
+  
+  // Tekst koji korisnik pise u pretragu
   const [searchQuery, setSearchQuery] = useState('');
 
+
+  // ============================================
   // ANIMACIJA
+  // ============================================
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -87,9 +124,12 @@ const OverviewScreen = ({ navigation }) => {
     }).start();
   }, []);
 
-  // =========================
-  // 🔒 NORMALIZACIJA PODATAKA
-  // =========================
+
+  // ============================================
+  // SIGURNOSNA PROVJERA PODATAKA
+  // ============================================
+  // Provjeravam da li su podaci liste (arrays)
+  // Ako nisu, koristim prazne liste
   const cards = Array.isArray(rawCards) ? rawCards : [];
   const transactions = Array.isArray(rawTransactions) ? rawTransactions : [];
   const categories = Array.isArray(rawCategories) ? rawCategories : [];
@@ -97,26 +137,33 @@ const OverviewScreen = ({ navigation }) => {
     ? rawBalanceHistory.weeklyData
     : [];
 
+  // Uzimam prvu karticu (ako postoji)
   const card = cards[0] ?? null;
 
-  const maxAmount =
-    weeklyStats.length > 0
-      ? Math.max(...weeklyStats.map(stat => Number(stat?.amount) || 0))
-      : 0;
+  // Trazim najveci iznos za skaliranje grafikona
+  const maxAmount = weeklyStats.length > 0
+    ? Math.max(...weeklyStats.map(stat => Number(stat?.amount) || 0))
+    : 0;
 
-  // =========================
-  // Monthly comparison (this month vs last month)
-  // =========================
-  // Determine reference month: prefer balanceHistory.currentMonth, fallback to month of newest transaction
+
+  // ============================================
+  // POREDIM OVAJ MJESEC SA PROSIM
+  // ============================================
+  
+  // Uzimam ime trenutnog mjeseca iz podataka
   const refMonthName = rawBalanceHistory?.currentMonth || null;
   let referenceMonthIndex = null;
+  
+  // Ako imam ime mjeseca, nalazim njegov broj
   if (refMonthName) {
-    const found = Object.keys(MONTHS).find(m => m.toLowerCase().startsWith(refMonthName.toLowerCase()));
+    const found = Object.keys(MONTHS).find(
+      m => m.toLowerCase().startsWith(refMonthName.toLowerCase())
+    );
     referenceMonthIndex = typeof found === 'string' ? MONTHS[found] : null;
   }
 
+  // Ako nisam nasla mjesec, uzimam najnoviju transakciju
   if (referenceMonthIndex === null) {
-    // fallback: find latest transaction date
     const dates = transactions
       .map(t => parseTransactionDate(t?.date))
       .filter(Boolean);
@@ -128,87 +175,127 @@ const OverviewScreen = ({ navigation }) => {
     }
   }
 
+  // Racunam ukupno za ovaj mjesec
   const thisMonthTotal = transactions.reduce((sum, t) => {
     const d = parseTransactionDate(t?.date);
     if (!d) return sum;
-    if (d.getMonth() === referenceMonthIndex) return sum + Number(t.amount || 0);
+    if (d.getMonth() === referenceMonthIndex) {
+      return sum + Number(t.amount || 0);
+    }
     return sum;
   }, 0);
 
+  // Broj proslog mjeseca (ako je januar, prosli je decembar = 11)
   const lastMonthIndex = referenceMonthIndex - 1 < 0 ? 11 : referenceMonthIndex - 1;
 
+  // Racunam ukupno za prosli mjesec
   const lastMonthTotal = transactions.reduce((sum, t) => {
     const d = parseTransactionDate(t?.date);
     if (!d) return sum;
-    if (d.getMonth() === lastMonthIndex) return sum + Number(t.amount || 0);
+    if (d.getMonth() === lastMonthIndex) {
+      return sum + Number(t.amount || 0);
+    }
     return sum;
   }, 0);
 
-  const percentageChange =
-    Math.abs(lastMonthTotal) > 0
-      ? ((thisMonthTotal - lastMonthTotal) / Math.abs(lastMonthTotal)) * 100
-      : 0;
+  // Racunam procenat promjene
+  const percentageChange = Math.abs(lastMonthTotal) > 0
+    ? ((thisMonthTotal - lastMonthTotal) / Math.abs(lastMonthTotal)) * 100
+    : 0;
+  
+  // Da li je promjena pozitivna
   const isPositive = percentageChange >= 0;
 
-  // =========================
-  // FILTER + SEARCH
-  // =========================
+
+  // ============================================
+  // FILTRIRANJE I PRETRAGA TRANSAKCIJA
+  // ============================================
   const filteredTransactions = transactions.filter(t => {
     if (!t) return false;
 
-    // CATEGORY FILTER
+    // Filter po kategoriji
     if (selectedCategory === 'expenses') {
-      if (t.type && t.type.toLowerCase() !== 'expense' && Number(t.amount) >= 0) return false;
+      // Samo rashodi (negativni iznosi ili tip "expense")
+      if (t.type && t.type.toLowerCase() !== 'expense' && Number(t.amount) >= 0) {
+        return false;
+      }
     }
     if (selectedCategory === 'income') {
-      if (t.type && t.type.toLowerCase() !== 'income' && Number(t.amount) <= 0) return false;
+      // Samo prihodi
+      if (t.type && t.type.toLowerCase() !== 'income' && Number(t.amount) <= 0) {
+        return false;
+      }
     }
     if (selectedCategory === 'transfers') {
+      // Samo transferi
       const cat = (t.category || '').toLowerCase();
       if (!cat.includes('transfer')) return false;
     }
 
-    // SEARCH
+    // Pretraga po tekstu
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      const matchesTitle = (t.title || t.name || '').toString().toLowerCase().includes(q);
-      const matchesCategory = (t.category || '').toString().toLowerCase().includes(q);
+      
+      // Trazim u naslovu
+      const matchesTitle = (t.title || t.name || '')
+        .toString().toLowerCase().includes(q);
+      
+      // Trazim u kategoriji
+      const matchesCategory = (t.category || '')
+        .toString().toLowerCase().includes(q);
+      
+      // Trazim u iznosu
       const matchesAmount = String(t.amount).toLowerCase().includes(q);
+      
       return matchesTitle || matchesCategory || matchesAmount;
     }
 
     return true;
   });
 
-  // HANDLERI
+
+  // ============================================
+  // FUNKCIJE ZA KLIKOVE
+  // ============================================
   const handleTransactionPress = transaction => {
     setSelectedTransaction(transaction);
     setDetailModalVisible(true);
   };
 
-  // UI helpers
+  // Ime mjeseca za prikaz
   const displayMonthLabel = rawBalanceHistory?.currentMonth ??
     Object.keys(MONTHS).find(k => MONTHS[k] === referenceMonthIndex) ?? 'Month';
 
+
+  // ============================================
+  // CRTAM EKRAN
+  // ============================================
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#0F0F1E" />
 
       <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-        {/* HEADER */}
+        
+        {/* ============ ZAGLAVLJE ============ */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          {/* Dugme za nazad */}
+          <TouchableOpacity 
+            onPress={() => navigation.goBack()} 
+            style={styles.backButton}
+          >
             <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
           </TouchableOpacity>
 
           <Text style={styles.headerTitle}>Overview</Text>
 
+          {/* Dugme za meni */}
           <TouchableOpacity style={styles.menuButton}>
             <Ionicons name="ellipsis-vertical" size={20} color="#FFFFFF" />
           </TouchableOpacity>
         </View>
 
-        {/* SEARCH BAR */}
+
+        {/* ============ PRETRAGA ============ */}
         <View style={styles.searchRow}>
           <Ionicons name="search" size={18} color="#A0A0C0" />
           <TextInput
@@ -219,6 +306,7 @@ const OverviewScreen = ({ navigation }) => {
             onChangeText={setSearchQuery}
             returnKeyType="search"
           />
+          {/* Dugme X za brisanje pretrage */}
           {searchQuery.length > 0 && (
             <TouchableOpacity onPress={() => setSearchQuery('')}>
               <Ionicons name="close" size={18} color="#A0A0C0" />
@@ -226,24 +314,31 @@ const OverviewScreen = ({ navigation }) => {
           )}
         </View>
 
+
         <ScrollView showsVerticalScrollIndicator={false}>
-          {/* MONTH + COMPARISON */}
+          
+          {/* ============ MJESEC I POREDENJE ============ */}
           <View style={styles.monthSection}>
             <Text style={styles.monthText}>{displayMonthLabel}</Text>
             <Text style={styles.balanceAmount}>${thisMonthTotal.toFixed(2)}</Text>
-
-            <Text style={[styles.balanceChange, { color: isPositive ? '#10B981' : '#EF4444' }]}>
+            <Text style={[
+              styles.balanceChange, 
+              { color: isPositive ? '#10B981' : '#EF4444' }
+            ]}>
               {isPositive ? '▲' : '▼'} {Math.abs(percentageChange).toFixed(1)}% vs last month
             </Text>
           </View>
 
-          {/* CARD */}
+
+          {/* ============ KARTICA ============ */}
           {card ? <CreditCard card={card} style={styles.cardSection} /> : null}
 
-          {/* STATISTICS */}
+
+          {/* ============ STATISTIKA - GRAFIKON ============ */}
           <SectionHeader title="Statistics" onSeeMore={() => {}} />
 
           <View style={styles.statisticsContainer}>
+            {/* Prikazujem stupac za svaki dan */}
             {weeklyStats.map((stat, index) => (
               <StatisticsBar
                 key={stat?.day ?? index}
@@ -256,23 +351,32 @@ const OverviewScreen = ({ navigation }) => {
             ))}
           </View>
 
-          {/* DATE */}
+
+          {/* ============ DATUM ============ */}
           <View style={styles.dateHeader}>
-            <Text style={styles.dateText}>{rawBalanceHistory?.currentDate ?? ''}</Text>
+            <Text style={styles.dateText}>
+              {rawBalanceHistory?.currentDate ?? ''}
+            </Text>
             <TouchableOpacity>
               <Text style={styles.seeMoreText}>See More &gt;</Text>
             </TouchableOpacity>
           </View>
 
-          {/* CATEGORY FILTER */}
+
+          {/* ============ FILTER PO KATEGORIJAMA ============ */}
           <CategoryFilter
-            categories={[{ id: 'all', name: 'All' }, ...categories.filter(c => c?.name)]}
+            categories={[
+              { id: 'all', name: 'All' }, 
+              ...categories.filter(c => c?.name)
+            ]}
             selectedCategory={selectedCategory}
             onSelectCategory={setSelectedCategory}
           />
 
-          {/* TRANSACTIONS */}
+
+          {/* ============ LISTA TRANSAKCIJA ============ */}
           <View style={styles.transactionsList}>
+            {/* Prikazujem prvih 8 filtriranih transakcija */}
             {filteredTransactions.slice(0, 8).map(transaction => (
               <TransactionItem
                 key={transaction?.id}
@@ -281,6 +385,7 @@ const OverviewScreen = ({ navigation }) => {
               />
             ))}
 
+            {/* Ako nema transakcija, prikazujem poruku */}
             {filteredTransactions.length === 0 && (
               <Text style={styles.emptyText}>No transactions found</Text>
             )}
@@ -290,7 +395,8 @@ const OverviewScreen = ({ navigation }) => {
         </ScrollView>
       </Animated.View>
 
-      {/* MODAL */}
+
+      {/* ============ MODAL ZA DETALJE ============ */}
       <TransactionDetailModal
         visible={detailModalVisible}
         onClose={() => setDetailModalVisible(false)}
@@ -300,6 +406,10 @@ const OverviewScreen = ({ navigation }) => {
   );
 };
 
+
+// ============================================
+// STILOVI
+// ============================================
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -309,6 +419,8 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
   },
+  
+  // Zaglavlje
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -337,6 +449,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  
+  // Pretraga
   searchRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -354,6 +468,8 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins-Regular',
     fontSize: 14,
   },
+  
+  // Mjesec sekcija
   monthSection: {
     alignItems: 'center',
     marginBottom: 12,
@@ -374,9 +490,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 2,
   },
+  
+  // Kartica
   cardSection: {
     marginBottom: 20,
   },
+  
+  // Statistika grafikon
   statisticsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -385,6 +505,8 @@ const styles = StyleSheet.create({
     padding: 15,
     marginBottom: 20,
   },
+  
+  // Datum header
   dateHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -401,6 +523,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#A0A0C0',
   },
+  
+  // Lista transakcija
   transactionsList: {
     marginTop: 10,
   },
