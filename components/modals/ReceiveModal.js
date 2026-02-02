@@ -1,6 +1,11 @@
-// ReceiveModal.js - Modal za primanje novca
-// Prikazuje QR kod i informacije za primanje novca
-// Ima opciju za dijeljenje i kopiranje
+// ============================================================
+// RECEIVE MODAL - Prozor za primanje novca
+// ============================================================
+// Ja sam napravio ovaj prozor da korisnik moze primiti novac.
+// Imam dva nacina za primanje: QR kod ili link.
+// QR kod je kao ona slika sa kvadraticima koju mozes skenirati.
+// Link je tvoja adresa koju mozes poslati prijatelju.
+// ============================================================
 
 import React, { useState } from 'react';
 import { 
@@ -14,38 +19,54 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import BaseModal from './BaseModal';
 
-// Props: visible, onClose, userName (ime korisnika za prikaz)
+// Ovo je moja komponenta za primanje novca
+// visible = da li je prozor vidljiv
+// onClose = funkcija za zatvaranje
+// userName = ime korisnika
 const ReceiveModal = ({ visible, onClose, userName = 'Student' }) => {
   
-  // State za odabranu metodu primanja
+  // Ovdje pamtim koji nacin je odabran: 'qr' ili 'link'
+  // Na pocetku je QR kod odabran
   const [selectedMethod, setSelectedMethod] = useState('qr');
 
-  // Generisemo "lazni" wallet ID
+  // Pravim "lazni" wallet ID - ovo je kao tvoja adresa za novac
+  // U pravoj aplikaciji ovo bi bilo pravo, ali za demo pravim random
   const walletId = 'STU-2024-' + Math.random().toString(36).substr(2, 8).toUpperCase();
 
-  // Funkcija za kopiranje wallet ID-a
+  // Kad korisnik hoce da kopira ID
   const handleCopy = () => {
-    // U pravoj aplikaciji, ovdje bi koristili Clipboard
+    // U pravoj aplikaciji bi se ID stvarno kopirao
+    // Za sada samo pokazujem poruku
     Alert.alert('Kopirano!', 'Wallet ID je kopiran u clipboard');
   };
 
-  // Funkcija za dijeljenje
+  // Kad korisnik hoce da podijeli
   const handleShare = () => {
-    // U pravoj aplikaciji, ovdje bi koristili Share API
+    // U pravoj aplikaciji bi se otvorilo dijeljenje
     Alert.alert('Dijeljenje', 'Otvara se opcija za dijeljenje...');
   };
 
   return (
+    // Koristim BaseModal kao osnovu - to mi daje okvir prozora
     <BaseModal visible={visible} onClose={onClose} title="Receive Money">
-      {/* Metode primanja - tabs */}
+      
+      {/* ========== TABOVI ZA ODABIR METODE ========== */}
+      {/* Ovo su dva dugmeta: QR Code i Link */}
       <View style={styles.methodTabs}>
+        
+        {/* Prvo dugme - QR Code */}
         <TouchableOpacity
-          style={[styles.methodTab, selectedMethod === 'qr' && styles.methodTabActive]}
+          style={[
+            styles.methodTab, 
+            // Ako je QR odabran, dodajem aktivni stil
+            selectedMethod === 'qr' && styles.methodTabActive
+          ]}
           onPress={() => setSelectedMethod('qr')}
         >
           <Ionicons 
             name="qr-code" 
             size={18} 
+            // Ako je aktivno = bijela ikona, ako nije = siva
             color={selectedMethod === 'qr' ? '#FFFFFF' : '#A0A0C0'} 
           />
           <Text style={[
@@ -54,8 +75,12 @@ const ReceiveModal = ({ visible, onClose, userName = 'Student' }) => {
           ]}>QR Code</Text>
         </TouchableOpacity>
 
+        {/* Drugo dugme - Link */}
         <TouchableOpacity
-          style={[styles.methodTab, selectedMethod === 'link' && styles.methodTabActive]}
+          style={[
+            styles.methodTab, 
+            selectedMethod === 'link' && styles.methodTabActive
+          ]}
           onPress={() => setSelectedMethod('link')}
         >
           <Ionicons 
@@ -70,15 +95,17 @@ const ReceiveModal = ({ visible, onClose, userName = 'Student' }) => {
         </TouchableOpacity>
       </View>
 
-      {/* QR Code prikaz */}
+      {/* ========== QR CODE PRIKAZ ========== */}
+      {/* Ovo se pokazuje samo kad je odabran QR */}
       {selectedMethod === 'qr' && (
         <View style={styles.qrContainer}>
-          {/* Simuliramo QR kod sa ikonama i okvirom */}
+          {/* Pravim okvir koji izgleda kao QR kod */}
           <View style={styles.qrCode}>
             <View style={styles.qrInner}>
+              {/* Koristim ikonu umjesto pravog QR koda za demo */}
               <Ionicons name="qr-code" size={120} color="#FFFFFF" />
             </View>
-            {/* Uglovi QR okvira */}
+            {/* Ovo su ukrasi - uglovi oko QR koda */}
             <View style={[styles.qrCorner, styles.qrCornerTL]} />
             <View style={[styles.qrCorner, styles.qrCornerTR]} />
             <View style={[styles.qrCorner, styles.qrCornerBL]} />
@@ -88,24 +115,29 @@ const ReceiveModal = ({ visible, onClose, userName = 'Student' }) => {
         </View>
       )}
 
-      {/* Link prikaz */}
+      {/* ========== LINK PRIKAZ ========== */}
+      {/* Ovo se pokazuje samo kad je odabran Link */}
       {selectedMethod === 'link' && (
         <View style={styles.linkContainer}>
           <Text style={styles.linkLabel}>Vas Wallet ID</Text>
+          
+          {/* Kutija sa ID-om i dugmetom za kopiranje */}
           <View style={styles.walletIdContainer}>
             <Text style={styles.walletId}>{walletId}</Text>
             <TouchableOpacity onPress={handleCopy} style={styles.copyButton}>
               <Ionicons name="copy-outline" size={20} color="#8B5CF6" />
             </TouchableOpacity>
           </View>
+          
           <Text style={styles.linkHint}>
             Podijelite ovaj ID da primate novac od prijatelja
           </Text>
         </View>
       )}
 
-      {/* Korisnicke informacije */}
+      {/* ========== INFORMACIJE O KORISNIKU ========== */}
       <View style={styles.userInfo}>
+        {/* Krug sa prvim slovom imena */}
         <View style={styles.userAvatar}>
           <Text style={styles.userInitial}>{userName.charAt(0)}</Text>
         </View>
@@ -115,7 +147,7 @@ const ReceiveModal = ({ visible, onClose, userName = 'Student' }) => {
         </View>
       </View>
 
-      {/* Dugme za dijeljenje */}
+      {/* ========== DUGME ZA DIJELJENJE ========== */}
       <TouchableOpacity onPress={handleShare} activeOpacity={0.9}>
         <LinearGradient
           colors={['#10B981', '#059669']}
@@ -131,17 +163,20 @@ const ReceiveModal = ({ visible, onClose, userName = 'Student' }) => {
   );
 };
 
+// ============================================================
+// STILOVI - Kako sve izgleda
+// ============================================================
 const styles = StyleSheet.create({
-  // Tabovi za metode
+  // ----- TABOVI -----
   methodTabs: {
-    flexDirection: 'row',
-    backgroundColor: '#2D2D5A',
-    borderRadius: 12,
+    flexDirection: 'row',       // Postavljam ih jedan pored drugog
+    backgroundColor: '#2D2D5A', // Tamna pozadina
+    borderRadius: 12,           // Zaobljeni uglovi
     padding: 4,
     marginBottom: 25,
   },
   methodTab: {
-    flex: 1,
+    flex: 1,                    // Svaki tab uzima pola prostora
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -149,18 +184,19 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   methodTabActive: {
-    backgroundColor: '#8B5CF6',
+    backgroundColor: '#8B5CF6', // Ljubicasta kad je aktivno
   },
   methodTabText: {
     fontFamily: 'Poppins-Medium',
     fontSize: 14,
-    color: '#A0A0C0',
+    color: '#A0A0C0',           // Siva kad nije aktivno
     marginLeft: 6,
   },
   methodTabTextActive: {
-    color: '#FFFFFF',
+    color: '#FFFFFF',           // Bijela kad je aktivno
   },
-  // QR kod
+  
+  // ----- QR KOD -----
   qrContainer: {
     alignItems: 'center',
     marginBottom: 25,
@@ -172,7 +208,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    position: 'relative',
+    position: 'relative',       // Da mogu staviti uglove
   },
   qrInner: {
     width: 160,
@@ -182,7 +218,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  // QR uglovi
+  
+  // ----- QR UGLOVI - ukrasi -----
   qrCorner: {
     position: 'absolute',
     width: 30,
@@ -225,7 +262,8 @@ const styles = StyleSheet.create({
     marginTop: 15,
     textAlign: 'center',
   },
-  // Link
+  
+  // ----- LINK -----
   linkContainer: {
     alignItems: 'center',
     marginBottom: 25,
@@ -261,7 +299,8 @@ const styles = StyleSheet.create({
     marginTop: 10,
     textAlign: 'center',
   },
-  // Korisnicke info
+  
+  // ----- KORISNIK INFO -----
   userInfo: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -273,7 +312,7 @@ const styles = StyleSheet.create({
   userAvatar: {
     width: 50,
     height: 50,
-    borderRadius: 25,
+    borderRadius: 25,           // Krug
     backgroundColor: '#8B5CF6',
     justifyContent: 'center',
     alignItems: 'center',
@@ -297,7 +336,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#A0A0C0',
   },
-  // Dugme za dijeljenje
+  
+  // ----- DUGME ZA DIJELJENJE -----
   shareButton: {
     flexDirection: 'row',
     alignItems: 'center',

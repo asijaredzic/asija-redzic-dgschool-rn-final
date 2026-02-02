@@ -1,17 +1,28 @@
-// index.js - Izvoz svih komponenti
-// Ovaj fajl omogucava lakse importovanje komponenti u drugim fajlovima
-// Umjesto vise import linija, mozemo pisati:
-// import { BalanceCard, ActionButton, TransactionItem } from '../components';
+// ============================================================
+// INDEX.JS - Izvoz svih komponenti na jednom mjestu
+// ============================================================
+// Ja sam napravio ovaj fajl da bude lakse importovati komponente.
+// Umjesto da pisem:
+//   import BalanceCard from '../components/BalanceCard';
+//   import ActionButton from '../components/ActionButton';
+//   import TransactionItem from '../components/TransactionItem';
+// 
+// Sada mogu pisati samo:
+//   import { BalanceCard, ActionButton, TransactionItem } from '../components';
+// 
+// To je mnogo krace i preglednije!
+// ============================================================
 
-// Osnovne komponente
-export { default as BalanceCard } from './BalanceCard';
-export { default as ActionButton } from './ActionButton';
-export { default as TransactionItem } from './TransactionItem';
-export { default as ContactItem } from './ContactItem';
-export { default as StatisticsBar } from './StatisticsBar';
-export { default as CreditCard } from './CreditCard';
-export { default as SectionHeader } from './SectionHeader';
-export { default as CategoryFilter } from './CategoryFilter';
+// Osnovne komponente - svaka prikazuje nesto na ekranu
+export { default as BalanceCard } from './BalanceCard';         // Kartica sa balansom
+export { default as ActionButton } from './ActionButton';       // Dugme za akcije
+export { default as TransactionItem } from './TransactionItem'; // Jedna transakcija
+export { default as ContactItem } from './ContactItem';         // Jedan kontakt
+export { default as StatisticsBar } from './StatisticsBar';     // Traka sa statistikom
+export { default as CreditCard } from './CreditCard';           // Kreditna kartica
+export { default as SectionHeader } from './SectionHeader';     // Zaglavlje sekcije
+export { default as CategoryFilter } from './CategoryFilter';   // Filter kategorija
 
-// Modali - izvozimo iz modals foldera
+// Modali - izvozim sve iz modals foldera
+// Zvjezdica (*) znaci "sve sto ima"
 export * from './modals';
